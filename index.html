@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090f20">
+<title>SZEPT — Twoje słowa. Czyjeś emocje.</title>
+<style>
+:root{
+ --bg:#080e1d;--panel:#101a30;--panel2:#15213b;--line:#263552;
+ --text:#f4f0e7;--muted:#a8b2c7;--gold:#e5c98a;--lav:#b9a8ee;
+ --danger:#e58b98;--ok:#9dd7b3;--shadow:0 18px 55px #02061188;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(ellipse at 70% -10%,#26345a 0,transparent 38%),radial-gradient(ellipse at 0% 50%,#161c3a 0,transparent 35%),var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+a{color:var(--gold)}
+.shell{max-width:1160px;margin:auto;padding:0 22px}
+header{position:sticky;top:0;z-index:10;background:#080e1ddd;backdrop-filter:blur(16px);border-bottom:1px solid #ffffff12}
+.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text)}
+.moon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#e9d49d,#a68fd4);color:#11172a;font-size:22px;box-shadow:0 0 28px #d4c18b44}
+.brand strong{font-family:Georgia,serif;font-size:25px;letter-spacing:3px}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:1.3px;margin-top:-4px}
+nav{display:flex;gap:7px;flex-wrap:wrap}
+.navbtn,.ghost,.primary,.soft{border:1px solid transparent;border-radius:999px;padding:10px 15px;background:transparent;color:var(--muted);transition:.2s}
+.navbtn:hover,.navbtn.active{background:#ffffff0d;color:var(--text);border-color:#ffffff18}
+.primary{background:linear-gradient(120deg,#e8d39f,#c3a8e8);color:#17182a;font-weight:750;border:0;box-shadow:0 8px 25px #bba6df25}
+.primary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.soft{background:#ffffff0b;border-color:#ffffff18;color:var(--text)}
+.ghost{border-color:#ffffff20;color:var(--text)}
+.danger{color:var(--danger)}
+.hero{padding:66px 0 42px;display:grid;grid-template-columns:1.15fr .85fr;gap:35px;align-items:center}
+.eyebrow{color:var(--gold);letter-spacing:2px;text-transform:uppercase;font-size:11px;font-weight:700}
+h1,h2,h3,.poem-title{font-family:Georgia,'Times New Roman',serif;font-weight:500}
+h1{font-size:clamp(42px,6vw,76px);line-height:1.02;letter-spacing:-2px;margin:14px 0 18px}
+h1 em{color:var(--gold);font-weight:400}
+.lead{color:#c1cad9;font-size:18px;max-width:590px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:25px}
+.hero-art{min-height:270px;position:relative;display:grid;place-items:center;overflow:hidden;border:1px solid #ffffff15;border-radius:28px;background:radial-gradient(circle at 50% 45%,#34436d 0,#182542 34%,#10182c 70%);box-shadow:var(--shadow)}
+.hero-art:before{content:"";position:absolute;width:190px;height:190px;border-radius:50%;background:#e8d9ad;box-shadow:0 0 70px #e8d9ad55;top:42px;right:23%}
+.hero-art:after{content:"";position:absolute;width:190px;height:190px;border-radius:50%;background:#1a2541;top:15px;right:16%;transform:translateX(34px)}
+.wave{position:absolute;bottom:-60px;width:150%;height:150px;border-radius:50% 50% 0 0;background:#24395d;transform:rotate(-7deg)}
+.wave.two{bottom:-88px;background:#182b4b;transform:rotate(6deg)}
+.bottle{z-index:2;font-size:64px;filter:drop-shadow(0 10px 18px #0008);transform:rotate(-13deg);margin-top:65px}
+.stars{position:absolute;inset:0;background-image:radial-gradient(#fff 1px,transparent 1px),radial-gradient(#d9c9a0 1px,transparent 1px);background-size:67px 67px,103px 103px;background-position:5px 13px,29px 41px;opacity:.45}
+.section{padding:30px 0 55px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:20px}
+h2{font-size:32px;margin:0}
+.sub{color:var(--muted);margin:4px 0 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:linear-gradient(150deg,#14203a,#0e172a);border:1px solid #ffffff15;border-radius:18px;padding:20px;box-shadow:0 12px 32px #02061130}
+.poem-card{min-height:235px;display:flex;flex-direction:column}
+.poem-title{font-size:24px;line-height:1.2;margin:7px 0 12px}
+.poem-excerpt{white-space:pre-line;color:#d7d9e2;flex:1;line-height:1.7}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin-top:17px}
+.tag{display:inline-flex;border:1px solid #d8c28a55;color:#e4d2a6;background:#d8c28a0d;padding:4px 9px;border-radius:999px;font-size:11px}
+.card-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.card-actions button{font-size:12px;padding:7px 11px}
+.page{display:none;padding:40px 0 70px;min-height:65vh}
+.page.active{display:block}
+.form-card{max-width:760px;margin:auto}
+.field{display:grid;gap:7px;margin:17px 0}
+label{font-size:13px;color:#d8deea}
+input,textarea,select{width:100%;background:#080f20;border:1px solid #35415d;color:var(--text);border-radius:12px;padding:13px 14px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--lav);box-shadow:0 0 0 3px #b9a8ee18}
+textarea{min-height:230px;resize:vertical;line-height:1.7}
+.hint{color:var(--muted);font-size:12px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+.filterbar button{padding:8px 13px;border:1px solid #ffffff20;border-radius:999px;background:#ffffff08;color:var(--muted)}
+.filterbar button.active{background:#d9c28a20;color:var(--gold);border-color:#d9c28a66}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.bottle-panel{text-align:center;max-width:700px;margin:25px auto;padding:34px 25px;background:radial-gradient(circle at 50% 0%,#34456c,#14213a 55%,#10182a);border:1px solid #ffffff1c;border-radius:24px}
+.bottle-icon{font-size:76px;filter:drop-shadow(0 8px 18px #0008)}
+.received{display:none;text-align:left;margin-top:22px;background:#080f20aa;border:1px solid #ffffff1b;border-radius:16px;padding:22px}
+.profile-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+.stat{text-align:center;padding:18px 8px;background:#ffffff08;border:1px solid #ffffff12;border-radius:14px}
+.stat strong{display:block;font:28px Georgia;color:var(--gold)}
+footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-size:12px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(100px);background:#e8d39f;color:#17182a;padding:12px 18px;border-radius:999px;font-weight:700;z-index:30;transition:.25s;box-shadow:var(--shadow)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.notice{border:1px solid #d9c28a55;background:#d9c28a0d;color:#e9dcb9;border-radius:13px;padding:13px 15px;font-size:13px;margin:16px 0}
+@media(max-width:800px){.hero{grid-template-columns:1fr;padding-top:45px}.hero-art{min-height:220px}.grid{grid-template-columns:repeat(2,1fr)}.topbar{height:auto;min-height:70px;align-items:flex-start;padding-top:15px;padding-bottom:12px;flex-direction:column}nav{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.navbtn{white-space:nowrap}.section-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:540px){.shell{padding:0 15px}.grid{grid-template-columns:1fr}.hero{padding-top:35px}.hero-art{min-height:190px}.profile-stat{gap:7px}.stat strong{font-size:23px}h2{font-size:28px}.card{padding:17px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="shell topbar">
+  <a class="brand" href="#" onclick="showPage('home');return false"><span class="moon">☾</span><span><strong>SZEPT</strong><small>TWOJE SŁOWA. CZYJEŚ EMOCJE.</small></span></a>
+  <nav aria-label="Główna nawigacja">
+   <button class="navbtn active" data-page="home">Start</button>
+   <button class="navbtn" data-page="library">Czytelnia</button>
+   <button class="navbtn" data-page="write">Napisz</button>
+   <button class="navbtn" data-page="bottle">Butelka</button>
+   <button class="navbtn" data-page="saved">Biblioteczka</button>
+   <button class="navbtn" data-page="profile">Mój profil</button>
+  </nav>
+ </div>
+</header>
+<main class="shell">
+ <section id="home" class="page active">
+  <div class="hero">
+   <div>
+    <div class="eyebrow">Przystań dla słów i emocji</div>
+    <h1>Nie wszystko trzeba<br><em>powiedzieć na głos.</em></h1>
+    <p class="lead">Czasami wystarczy napisać wiersz, żeby ktoś po drugiej stronie świata poczuł to samo. Czytaj, pisz i wysyłaj swoje słowa w nieznane.</p>
+    <div class="hero-actions"><button class="primary" onclick="showPage('library')">Odkryj poezję</button><button class="ghost" onclick="showPage('write')">Napisz swój wiersz</button></div>
+   </div>
+   <div class="hero-art" aria-label="Księżyc nad nocnym morzem"><div class="stars"></div><div class="wave"></div><div class="wave two"></div><div class="bottle">🍾</div></div>
+  </div>
+  <div class="section">
+   <div class="section-head"><div><div class="eyebrow">Słowa, które zostają</div><h2>Na dobry początek</h2><p class="sub">Kilka wierszy czeka, aż je odkryjesz.</p></div><button class="soft" onclick="showPage('library')">Cała czytelnia →</button></div>
+   <div id="homePoems" class="grid"></div>
+  </div>
+  <div class="notice"><strong>Ważne:</strong> To pierwsza, demonstracyjna wersja SZEPT. Wiersze zapisują się w pamięci tej przeglądarki. Na razie nie są widoczne dla innych osób ani synchronizowane między urządzeniami.</div>
+ </section>
+
+ <section id="library" class="page">
+  <div class="section-head"><div><div class="eyebrow">Odkrywaj bez pośpiechu</div><h2>Czytelnia</h2><p class="sub">Wybierz emocję i znajdź słowa bliskie Twojemu nastrojowi.</p></div></div>
+  <div class="filterbar" id="filters"></div>
+  <div id="poemList" class="grid"></div>
+ </section>
+
+ <section id="write" class="page">
+  <div class="form-card card">
+   <div class="eyebrow">Daj myślom płynąć</div><h2>Napisz wiersz</h2><p class="sub">Nie musi być idealny. Wystarczy, że będzie Twój.</p>
+   <form id="poemForm">
+    <div class="field"><label for="title">Tytuł</label><input id="title" maxlength="90" placeholder="Na przykład: Światło w oknie" required></div>
+    <div class="field"><label for="body">Treść wiersza</label><textarea id="body" maxlength="5000" placeholder="Zapisz tutaj swoje słowa..." required></textarea><div class="hint">Maksymalnie 5000 znaków. Zachowujemy podział na wersy.</div></div>
+    <div class="row">
+     <div class="field"><label for="emotion">Emocja</label><select id="emotion"><option>Miłość</option><option>Tęsknota</option><option>Samotność</option><option>Nadzieja</option><option>Smutek</option><option>Szczęście</option><option>Rozstanie</option><option>Nowy początek</option></select></div>
+     <div class="field"><label for="author">Podpis</label><input id="author" maxlength="32" placeholder="Twój pseudonim (opcjonalnie)"></div>
+    </div>
+    <label class="row" style="justify-content:flex-start;margin:8px 0 18px"><input id="anonymous" type="checkbox" style="width:auto"> <span>Opublikuj anonimowo</span></label>
+    <div class="row"><button class="primary" type="submit">Opublikuj wiersz</button><button class="soft" type="button" onclick="saveDraft()">Zapisz szkic</button></div>
+   </form>
+  </div>
+ </section>
+
+ <section id="bottle" class="page">
+  <div class="eyebrow" style="text-align:center">Wiadomość bez adresu</div><h2 style="text-align:center">Butelka na morzu</h2>
+  <p class="sub" style="text-align:center">Wypuść słowa w nieznane. Może ktoś właśnie czeka, by je przeczytać.</p>
+  <div class="bottle-panel">
+   <div class="bottle-icon">🍾</div><h2>Co dziś chcesz wysłać światu?</h2>
+   <p class="sub">W tej wersji możesz wysłać jeden ze swoich opublikowanych wierszy do demonstracyjnej, lokalnej skrzynki.</p>
+   <div class="field" style="text-align:left"><label for="bottlePoem">Wybierz swój wiersz</label><select id="bottlePoem"></select></div>
+   <button class="primary" onclick="sendBottle()">Wyślij w świat</button>
+   <div id="bottleResult" class="received"></div>
+  </div>
+  <div class="notice">W prawdziwej wersji butelka będzie losowo dostarczana innemu użytkownikowi. Teraz testujemy sam przepływ na Twoim urządzeniu.</div>
+ </section>
+
+ <section id="saved" class="page">
+  <div class="eyebrow">Zachowaj na później</div><h2>Twoja biblioteczka</h2><p class="sub">Wiersze, do których chcesz wrócić.</p>
+  <div id="savedList" class="grid" style="margin-top:20px"></div>
+ </section>
+
+ <section id="profile" class="page">
+  <div class="card" style="max-width:760px;margin:auto">
+   <div class="eyebrow">Twoja mała przestrzeń</div><h2>Mój profil</h2>
+   <div class="field"><label for="nickname">Pseudonim autora</label><input id="nickname" maxlength="32" placeholder="Jak mamy Cię nazywać?"></div>
+   <div class="field"><label for="bio">Kilka słów o Tobie</label><textarea id="bio" style="min-height:90px" maxlength="240" placeholder="Lubię pisać o..."></textarea></div>
+   <button class="primary" onclick="saveProfile()">Zapisz profil</button>
+   <div class="profile-stat"><div class="stat"><strong id="myCount">0</strong><span class="hint">Moje wiersze</span></div><div class="stat"><strong id="savedCount">0</strong><span class="hint">Zapisane</span></div><div class="stat"><strong id="bottleCount">0</strong><span class="hint">Butelki</span></div></div>
+   <div class="notice">Profil jest obecnie zapisany wyłącznie w tej przeglądarce.</div>
+   <button class="ghost danger" onclick="clearData()">Usuń lokalne dane SZEPT</button>
+  </div>
+ </section>
+</main>
+<footer><div class="shell">☾ SZEPT · Twoje słowa. Czyjeś emocje. <span style="float:right">Wersja demonstracyjna 0.1</span></div></footer>
+<div id="toast" class="toast" role="status"></div>
+<script>
+const KEY='szept-demo-v1';
+const demo=[
+ {id:'d1',title:'Kiedy miasto zasypia',body:'Ulice chowają ostatnie światła,\na wiatr układa ciszę na dachach.\nWtedy najłatwiej usłyszeć serce,\nktóre cały dzień mówiło szeptem.',emotion:'Samotność',author:'Nocny Wędrowiec',demo:true},
+ {id:'d2',title:'Małe światło',body:'Nie obiecuję, że rozproszę ciemność.\nMogę tylko zostawić małe światło\nna parapecie,\nżebyś wiedział, że ktoś pamięta.',emotion:'Nadzieja',author:'Anonim',demo:true},
+ {id:'d3',title:'Mapa twoich dłoni',body:'Pamiętam drogę,\nchoć dawno zniknęły drogowskazy.\nNiektóre miejsca zostają w nas\nbez pytania o pozwolenie.',emotion:'Tęsknota',author:'Papierowy Księżyc',demo:true}
+];
+let state=load();
+let activeFilter='Wszystkie';
+function load(){try{let x=JSON.parse(localStorage.getItem(KEY));return x||{poems:[],saved:[],bottles:[],profile:{}}}catch(e){return {poems:[],saved:[],bottles:[],profile:{}}}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
+function allPoems(){return [...state.poems,...demo]}
+function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library')renderLibrary();if(id==='saved')renderSaved();if(id==='profile')renderProfile();if(id==='bottle')renderBottleSelect();window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+function poemCard(p){let own=!p.demo;let saved=state.saved.includes(p.id);return `<article class="card poem-card"><div><span class="tag">${escapeHTML(p.emotion)}</span></div><h3 class="poem-title">${escapeHTML(p.title)}</h3><div class="poem-excerpt">${escapeHTML(p.body)}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':'Twój tekst'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'♥ Zapisano':'♡ Zapisz'}</button>${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`}
+function renderHome(){document.getElementById('homePoems').innerHTML=allPoems().slice(0,3).map(poemCard).join('')}
+const emotions=['Wszystkie','Miłość','Tęsknota','Samotność','Nadzieja','Smutek','Szczęście','Rozstanie','Nowy początek'];
+function renderLibrary(){document.getElementById('filters').innerHTML=emotions.map(e=>`<button class="${activeFilter===e?'active':''}" onclick="setFilter('${e}')">${e}</button>`).join('');let list=allPoems().filter(p=>activeFilter==='Wszystkie'||p.emotion===activeFilter);document.getElementById('poemList').innerHTML=list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Nie ma jeszcze wierszy w tej kategorii. Może napiszesz pierwszy?</div>'}
+function setFilter(e){activeFilter=e;renderLibrary()}
+function toggleSave(id){state.saved=state.saved.includes(id)?state.saved.filter(x=>x!==id):[...state.saved,id];persist();renderHome();renderLibrary();renderSaved();toast(state.saved.includes(id)?'Dodano do biblioteczki':'Usunięto z biblioteczki')}
+function renderSaved(){let list=allPoems().filter(p=>state.saved.includes(p.id));document.getElementById('savedList').innerHTML=list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Twoja biblioteczka jest jeszcze pusta. Zapisz wiersz, który chcesz zachować.</div>'}
+document.getElementById('poemForm').addEventListener('submit',e=>{e.preventDefault();let title=document.getElementById('title').value.trim(),body=document.getElementById('body').value.trim();if(!title||!body)return;let nick=document.getElementById('author').value.trim()||state.profile.nickname||'Anonim';let anonymous=document.getElementById('anonymous').checked;state.poems.unshift({id:'p'+Date.now(),title,body,emotion:document.getElementById('emotion').value,author:anonymous?'Anonim':nick,demo:false,created:new Date().toISOString()});persist();e.target.reset();toast('Twój wiersz został opublikowany');showPage('library')});
+function saveDraft(){let draft={title:document.getElementById('title').value,body:document.getElementById('body').value};localStorage.setItem(KEY+'-draft',JSON.stringify(draft));toast('Szkic zapisany na tym urządzeniu')}
+function deletePoem(id){if(!confirm('Usunąć ten wiersz?'))return;state.poems=state.poems.filter(p=>p.id!==id);state.saved=state.saved.filter(x=>x!==id);persist();renderLibrary();renderHome();toast('Wiersz usunięty')}
+function renderBottleSelect(){let own=state.poems;document.getElementById('bottlePoem').innerHTML=own.length?own.map(p=>`<option value="${p.id}">${escapeHTML(p.title)}</option>`).join(''):'<option value="">Najpierw opublikuj swój wiersz</option>'}
+function sendBottle(){let id=document.getElementById('bottlePoem').value;let p=state.poems.find(x=>x.id===id);if(!p){toast('Najpierw opublikuj własny wiersz');return}state.bottles.push({id:'b'+Date.now(),poemId:id,date:new Date().toISOString()});persist();document.getElementById('bottleResult').style.display='block';document.getElementById('bottleResult').innerHTML=`<div class="eyebrow">Butelka wypłynęła</div><h3 class="poem-title">${escapeHTML(p.title)}</h3><p class="sub">Wiersz został dodany do Twojej lokalnej historii butelek. W prawdziwej wersji otrzyma go inny czytelnik.</p>`;toast('Wysłano butelkę w wersji demonstracyjnej');renderProfile()}
+function saveProfile(){state.profile.nickname=document.getElementById('nickname').value.trim();state.profile.bio=document.getElementById('bio').value.trim();persist();toast('Profil zapisany')}
+function renderProfile(){document.getElementById('nickname').value=state.profile.nickname||'';document.getElementById('bio').value=state.profile.bio||'';document.getElementById('myCount').textContent=state.poems.length;document.getElementById('savedCount').textContent=state.saved.length;document.getElementById('bottleCount').textContent=state.bottles.length}
+function clearData(){if(!confirm('Czy na pewno usunąć wszystkie Twoje lokalne wiersze, szkice, zapisane teksty i profil?'))return;state={poems:[],saved:[],bottles:[],profile:{}};persist();localStorage.removeItem(KEY+'-draft');renderHome();renderLibrary();renderSaved();renderProfile();toast('Lokalne dane zostały usunięte')}
+renderHome();renderLibrary();renderSaved();renderProfile();renderBottleSelect();
+try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getElementById('title').value=d.title||'';document.getElementById('body').value=d.body||''}}catch(e){}
+</script>
+</body>
+</html>
