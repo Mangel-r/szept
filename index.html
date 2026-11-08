@@ -216,12 +216,15 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   async function zapiszWiersz(title, content, emotion) {
+   const { data: { user }, error: authError } = await db.auth.signInAnonymously();
+  if (authError || !user) { alert('Nie udało się połączyć. Spróbuj ponownie.'); return; } 
   const { data, error } = await db
     .from('Poems')
     .insert([{
       title: title,
       content: content,
       emotion: emotion,
+     user_id: user.id,
       status: 'published'
     }]);
 
