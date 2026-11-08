@@ -117,7 +117,7 @@ footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-siz
    <div class="section-head"><div><div class="eyebrow">Słowa, które zostają</div><h2>Na dobry początek</h2><p class="sub">Kilka wierszy czeka, aż je odkryjesz.</p></div><button class="soft" onclick="showPage('library')">Cała czytelnia →</button></div>
    <div id="homePoems" class="grid"></div>
   </div>
-  <div class="notice"><strong>Ważne:</strong> To pierwsza, demonstracyjna wersja SZEPT. Wiersze zapisują się w pamięci tej przeglądarki. Na razie nie są widoczne dla innych osób ani synchronizowane między urządzeniami.</div>
+  <div class="notice"><strong>Ważne:</strong> To pierwsza, demonstracyjna wersja SZEPT. Nowe wiersze publikowane są we wspólnej Czytelni. Wcześniejsze wiersze zapisane lokalnie pozostają widoczne tylko na tym urządzeniu. Profil, szkice i Butelka nadal są lokalne.</div>
  </section>
 
  <section id="library" class="page">
@@ -134,9 +134,9 @@ footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-siz
     <div class="field"><label for="body">Treść wiersza</label><textarea id="body" maxlength="5000" placeholder="Zapisz tutaj swoje słowa..." required></textarea><div class="hint">Maksymalnie 5000 znaków. Zachowujemy podział na wersy.</div></div>
     <div class="row">
      <div class="field"><label for="emotion">Emocja</label><select id="emotion"><option>Miłość</option><option>Tęsknota</option><option>Samotność</option><option>Nadzieja</option><option>Smutek</option><option>Szczęście</option><option>Rozstanie</option><option>Nowy początek</option></select></div>
-     <div class="field"><label for="author">Podpis</label><input id="author" maxlength="32" placeholder="Twój pseudonim (opcjonalnie)"></div>
+     <div class="field"><label for="author">Podpis (lokalny profil)</label><input id="author" maxlength="32" placeholder="Pseudonim nie jest jeszcze publikowany" disabled></div>
     </div>
-    <label class="row" style="justify-content:flex-start;margin:8px 0 18px"><input id="anonymous" type="checkbox" style="width:auto"> <span>Opublikuj anonimowo</span></label>
+    <label class="row" style="justify-content:flex-start;margin:8px 0 18px"><input id="anonymous" type="checkbox" style="width:auto" checked disabled> <span>Na razie wszystkie nowe wiersze są publikowane anonimowo</span></label>
     <div class="row"><button class="primary" type="submit">Opublikuj wiersz</button><button class="soft" type="button" onclick="saveDraft()">Zapisz szkic</button></div>
    </form>
   </div>
@@ -183,21 +183,39 @@ const demo=[
 ];
 let state=load();
 let activeFilter='Wszystkie';
+let sharedPoems=[];
+let sharedLoadError=false;
 function load(){try{let x=JSON.parse(localStorage.getItem(KEY));return x||{poems:[],saved:[],bottles:[],profile:{}}}catch(e){return {poems:[],saved:[],bottles:[],profile:{}}}}
 function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
-function allPoems(){return [...state.poems,...demo]}
+function allPoems(){return [...sharedPoems,...state.poems.map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library')renderLibrary();if(id==='saved')renderSaved();if(id==='profile')renderProfile();if(id==='bottle')renderBottleSelect();window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile')renderProfile();if(id==='bottle')renderBottleSelect();window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
-function poemCard(p){let own=!p.demo;let saved=state.saved.includes(p.id);return `<article class="card poem-card"><div><span class="tag">${escapeHTML(p.emotion)}</span></div><h3 class="poem-title">${escapeHTML(p.title)}</h3><div class="poem-excerpt">${escapeHTML(p.body)}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':'Twój tekst'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'♥ Zapisano':'♡ Zapisz'}</button>${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`}
+function poemCard(p){let own=!!p.local;let saved=state.saved.includes(p.id);return `<article class="card poem-card"><div><span class="tag">${escapeHTML(p.emotion)}</span></div><h3 class="poem-title">${escapeHTML(p.title)}</h3><div class="poem-excerpt">${escapeHTML(p.body)}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':p.local?'Tylko na tym urządzeniu':'Opublikowany'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'♥ Zapisano':'♡ Zapisz'}</button>${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`}
 function renderHome(){document.getElementById('homePoems').innerHTML=allPoems().slice(0,3).map(poemCard).join('')}
 const emotions=['Wszystkie','Miłość','Tęsknota','Samotność','Nadzieja','Smutek','Szczęście','Rozstanie','Nowy początek'];
-function renderLibrary(){document.getElementById('filters').innerHTML=emotions.map(e=>`<button class="${activeFilter===e?'active':''}" onclick="setFilter('${e}')">${e}</button>`).join('');let list=allPoems().filter(p=>activeFilter==='Wszystkie'||p.emotion===activeFilter);document.getElementById('poemList').innerHTML=list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Nie ma jeszcze wierszy w tej kategorii. Może napiszesz pierwszy?</div>'}
+function renderLibrary(){document.getElementById('filters').innerHTML=emotions.map(e=>`<button class="${activeFilter===e?'active':''}" onclick="setFilter('${e}')">${e}</button>`).join('');let list=allPoems().filter(p=>activeFilter==='Wszystkie'||p.emotion===activeFilter);document.getElementById('poemList').innerHTML=(sharedLoadError?'<div class="notice" style="grid-column:1/-1">Nie udało się pobrać wspólnych wierszy. Sprawdź połączenie i odśwież stronę.</div>':'')+(list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Nie ma jeszcze wierszy w tej kategorii. Może napiszesz pierwszy?</div>')}
 function setFilter(e){activeFilter=e;renderLibrary()}
 function toggleSave(id){state.saved=state.saved.includes(id)?state.saved.filter(x=>x!==id):[...state.saved,id];persist();renderHome();renderLibrary();renderSaved();toast(state.saved.includes(id)?'Dodano do biblioteczki':'Usunięto z biblioteczki')}
 function renderSaved(){let list=allPoems().filter(p=>state.saved.includes(p.id));document.getElementById('savedList').innerHTML=list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Twoja biblioteczka jest jeszcze pusta. Zapisz wiersz, który chcesz zachować.</div>'}
-document.getElementById('poemForm').addEventListener('submit',e=>{e.preventDefault();let title=document.getElementById('title').value.trim(),body=document.getElementById('body').value.trim();if(!title||!body)return;let nick=document.getElementById('author').value.trim()||state.profile.nickname||'Anonim';let anonymous=document.getElementById('anonymous').checked;state.poems.unshift({id:'p'+Date.now(),title,body,emotion:document.getElementById('emotion').value,author:anonymous?'Anonim':nick,demo:false,created:new Date().toISOString()});persist();e.target.reset();toast('Twój wiersz został opublikowany');showPage('library')});
+document.getElementById('poemForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const form=e.currentTarget, button=form.querySelector('button[type="submit"]');
+ const title=document.getElementById('title').value.trim(), body=document.getElementById('body').value.trim();
+ const emotion=document.getElementById('emotion').value;
+ if(!title||!body||button.disabled)return;
+ button.disabled=true;button.textContent='Publikowanie…';
+ try {
+  await zapiszWiersz(title,body,emotion);
+  form.reset();localStorage.removeItem(KEY+'-draft');
+  await refreshSharedPoems();
+  toast('Wiersz opublikowany dla wszystkich');showPage('library');
+ } catch(error) {
+  console.error('Nie udało się opublikować wiersza:',error);
+  alert('Nie udało się opublikować wiersza w Supabase. Twój tekst pozostał w formularzu. Spróbuj ponownie.');
+ } finally {button.disabled=false;button.textContent='Opublikuj wiersz';}
+});
 function saveDraft(){let draft={title:document.getElementById('title').value,body:document.getElementById('body').value};localStorage.setItem(KEY+'-draft',JSON.stringify(draft));toast('Szkic zapisany na tym urządzeniu')}
 function deletePoem(id){if(!confirm('Usunąć ten wiersz?'))return;state.poems=state.poems.filter(p=>p.id!==id);state.saved=state.saved.filter(x=>x!==id);persist();renderLibrary();renderHome();toast('Wiersz usunięty')}
 function renderBottleSelect(){let own=state.poems;document.getElementById('bottlePoem').innerHTML=own.length?own.map(p=>`<option value="${p.id}">${escapeHTML(p.title)}</option>`).join(''):'<option value="">Najpierw opublikuj swój wiersz</option>'}
@@ -215,25 +233,32 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  async function zapiszWiersz(title, content, emotion) {
-   const { data: { user }, error: authError } = await db.auth.signInAnonymously();
-  if (authError || !user) { alert('Nie udało się połączyć. Spróbuj ponownie.'); return; } 
-  const { data, error } = await db
-    .from('Poems')
-    .insert([{
-      title: title,
-      content: content,
-      emotion: emotion,
-     user_id: user.id,
-      status: 'published'
-    }]);
-
-  if (error) {
-    console.error('Błąd zapisu:', error);
-  } else {
-    console.log('Wiersz zapisany!', data);
+async function zapiszWiersz(title, content, emotion) {
+  let {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!session){
+    const {data,error}=await db.auth.signInAnonymously();
+    if(error)throw error;
+    session=data.session;
   }
+  if(!session?.user?.id)throw new Error('Brak identyfikatora użytkownika');
+  const {error}=await db.from('Poems').insert({
+    title,content,emotion,user_id:session.user.id,status:'published'
+  });
+  if(error)throw error;
 }
+async function refreshSharedPoems(){
+ try{
+  const {data,error}=await db.from('Poems')
+    .select('id,title,content,emotion,created_at')
+    .eq('status','published').order('created_at',{ascending:false}).limit(200);
+  if(error)throw error;
+  sharedPoems=(data||[]).map(p=>({id:'s'+p.id,title:p.title||'',body:p.content||'',emotion:p.emotion||'',author:'Anonim',demo:false,local:false,created:p.created_at}));
+  sharedLoadError=false;
+ }catch(error){console.error('Nie udało się pobrać wierszy:',error);sharedLoadError=true;}
+ renderHome();renderLibrary();renderSaved();
+}
+refreshSharedPoems();
 </script>
 </body>
 </html>
