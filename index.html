@@ -260,6 +260,31 @@ async function refreshSharedPoems(){
 }
 refreshSharedPoems();
 </script>
+ 
+<section id="dodaj-publikacje">
+  <h2>Podziel się swoim szeptem 🌸</h2>
+  <p>Twoje słowa mają znaczenie.</p>
+
+  <form>
+    <label for="autor">Podpis autora</label>
+    <input id="autor" type="text"
+           placeholder="Imię lub pseudonim">
+
+    <label>
+      <input type="checkbox">
+      Chcę pozostać anonimowo
+    </label>
+
+    <label for="tresc">Twój tekst</label>
+    <textarea id="tresc" rows="8"
+              placeholder="Napisz swój szept..."></textarea>
+
+    <button type="button">
+      Wyślij do zatwierdzenia
+    </button>
+  </form>
+</section>
+
 </body>
 </html>
 
