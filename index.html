@@ -215,6 +215,22 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  async function zapiszWiersz(title, content, emotion) {
+  const { data, error } = await db
+    .from('Poems')
+    .insert([{
+      title: title,
+      content: content,
+      emotion: emotion,
+      status: 'published'
+    }]);
+
+  if (error) {
+    console.error('Błąd zapisu:', error);
+  } else {
+    console.log('Wiersz zapisany!', data);
+  }
+}
 </script>
 </body>
 </html>
