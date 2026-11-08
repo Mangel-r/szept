@@ -265,9 +265,9 @@ refreshSharedPoems();
   <h2>Podziel się swoim szeptem 🌸</h2>
   <p>Twoje słowa mają znaczenie.</p>
 
-  <form>
+<form action="https://formspree.io/f/mgaabggn" method="POST">
     <label for="autor">Podpis autora</label>
-    <input id="autor" type="text"
+    <input id="autor" name="author" type="text"
            placeholder="Imię lub pseudonim">
 
     <label>
@@ -276,10 +276,10 @@ refreshSharedPoems();
     </label>
 
     <label for="tresc">Twój tekst</label>
-    <textarea id="tresc" rows="8"
+   <textarea id="tresc" name="message" rows="8"
               placeholder="Napisz swój szept..."></textarea>
 
-    <button type="button">
+    <button type="submit">
       Wyślij do zatwierdzenia
     </button>
   </form>
