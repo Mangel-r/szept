@@ -207,11 +207,12 @@ function renderProfile(){document.getElementById('nickname').value=state.profile
 function clearData(){if(!confirm('Czy na pewno usunąć wszystkie Twoje lokalne wiersze, szkice, zapisane teksty i profil?'))return;state={poems:[],saved:[],bottles:[],profile:{}};persist();localStorage.removeItem(KEY+'-draft');renderHome();renderLibrary();renderSaved();renderProfile();toast('Lokalne dane zostały usunięte')}
 renderHome();renderLibrary();renderSaved();renderProfile();renderBottleSelect();
 try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getElementById('title').value=d.title||'';document.getElementById('body').value=d.body||''}}catch(e){}
+ </script>
 
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  <script>
  const SUPABASE_URL = "https://yxkzypfuccbarughatrj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";";
+const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 </script>
 </body>
