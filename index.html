@@ -233,7 +233,7 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-async function zapiszWiersz(title, content, emotion) {
+async function Wiersz_opublikowany(title, content, emotion) {
   let {data:{session},error:sessionError}=await db.auth.getSession();
   if(sessionError)throw sessionError;
  
@@ -374,7 +374,7 @@ document.getElementById('formularz-wiersza').addEventListener('submit', async fu
     const content = document.getElementById('tresc').value.trim();
     if (!content) throw new Error('Najpierw wpisz swój wiersz.');
 
-    await zapiszWiersz('Bez tytułu', content, 'Inne');
+  await Wiersz_opublikowany('Bez tytułu', content, 'Inne');
 
     komunikat.textContent = 'Wiersz wysłany do moderacji!';
     this.reset();
