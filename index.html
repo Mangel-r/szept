@@ -236,11 +236,10 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 async function zapiszWiersz(title, content, emotion) {
   let {data:{session},error:sessionError}=await db.auth.getSession();
   if(sessionError)throw sessionError;
-  if(!session){
-    const {data,error}=await db.auth.signInAnonymously();
-    if(error)throw error;
-    session=data.session;
-  }
+ 
+   if (!session?.user?.id || session.user.is_anonymous) {
+  throw new Error('Zaloguj się, aby dodać wiersz.');
+}
   if(!session?.user?.id)throw new Error('Brak identyfikatora użytkownika');
   const {error}=await db.from('Poems').insert({
     title,content,emotion,user_id:session.user.id,status:'pending'
@@ -284,6 +283,77 @@ refreshSharedPoems();
     </button>
   </form>
 </section>
+ <section id="konto-uzytkownika">
+  <h2>Twoje konto w SZEPCIE</h2>
+  <p>Czytać wiersze może każdy. Aby dodać własny, zaloguj się.</p>
+
+  <input id="auth-email" type="email"
+         placeholder="Adres e-mail" autocomplete="email">
+
+  <input id="auth-password" type="password"
+         placeholder="Hasło" autocomplete="current-password">
+
+  <button type="button" onclick="szeptZarejestruj()">
+    Zarejestruj się
+  </button>
+
+  <button type="button" onclick="szeptZaloguj()">
+    Zaloguj się
+  </button>
+
+  <button type="button" onclick="szeptWyloguj()">
+    Wyloguj się
+  </button>
+
+  <p id="auth-komunikat"></p>
+</section>
+ <script>
+  function szeptDaneLogowania() {
+    return {
+      email: document.getElementById('auth-email').value.trim(),
+      password: document.getElementById('auth-password').value
+    };
+  }
+
+  function szeptKomunikat(tekst) {
+    document.getElementById('auth-komunikat').textContent = tekst;
+  }
+
+  async function szeptZarejestruj() {
+    const { email, password } = szeptDaneLogowania();
+
+    if (!email || !password) {
+      szeptKomunikat('Podaj e-mail i hasło.');
+      return;
+    }
+
+    const { error } = await db.auth.signUp({ email, password });
+
+    szeptKomunikat(error
+      ? 'Błąd: ' + error.message
+      : 'Sprawdź pocztę i potwierdź rejestrację.');
+  }
+
+  async function szeptZaloguj() {
+    const { email, password } = szeptDaneLogowania();
+
+    const { error } = await db.auth.signInWithPassword({
+      email, password
+    });
+
+    szeptKomunikat(error
+      ? 'Błąd: ' + error.message
+      : 'Zalogowano pomyślnie!');
+  }
+
+  async function szeptWyloguj() {
+    const { error } = await db.auth.signOut();
+
+    szeptKomunikat(error
+      ? 'Błąd: ' + error.message
+      : 'Wylogowano.');
+  }
+</script>
 
 </body>
 </html>
