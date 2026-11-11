@@ -408,7 +408,34 @@ async function sprawdzModeratora() {
   }
 }
 
-sprawdzModeratora();
+async function pokazOczekujaceWiersze() {
+  const lista = document.getElementById('moderationList');
+  if (!lista) return;
+
+  const { data, error } = await db.from('Poems')
+    .select('id,title,content')
+    .eq('status', 'pending');
+
+  if (error) {
+    lista.textContent = 'Błąd: ' + error.message;
+    return;
+  }
+
+  lista.replaceChildren();
+  if (!data.length) {
+    lista.textContent = 'Brak wierszy do zatwierdzenia.';
+    return;
+  }
+
+  data.forEach(wiersz => {
+    const element = document.createElement('div');
+    element.textContent = (wiersz.title || 'Bez tytułu') + ': ' + wiersz.content;
+    lista.appendChild(element);
+  });
+}
+
+pokazOczekujaceWiersze();
+ sprawdzModeratora();
 
 </script>
 </body>
