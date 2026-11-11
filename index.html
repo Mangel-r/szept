@@ -207,10 +207,10 @@ document.getElementById('poemForm').addEventListener('submit',async e=>{
  if(!title||!body||button.disabled)return;
  button.disabled=true;button.textContent='Publikowanie…';
  try {
-  await zapiszWiersz(title,body,emotion);
+  await await wiersz_opublikowany(title,body,emotion);
   form.reset();localStorage.removeItem(KEY+'-draft');
   await refreshSharedPoems();
-  toast('Wiersz opublikowany dla wszystkich');showPage('library');
+  toast('Twój wiersz został wysłany do moderacji. Pojawi się w Czytelni po zatwierdzeniu.');showPage('library');
  } catch(error) {
   console.error('Nie udało się opublikować wiersza:',error);
   alert('Nie udało się opublikować wiersza w Supabase. Twój tekst pozostał w formularzu. Spróbuj ponownie.');
