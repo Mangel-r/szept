@@ -99,6 +99,7 @@ footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-siz
    <button class="navbtn" data-page="bottle">Butelka</button>
    <button class="navbtn" data-page="saved">Biblioteczka</button>
    <button class="navbtn" data-page="profile">Mój profil</button>
+   <button class="navbtn" data-page="moderation" id="moderationBtn" style="display:none">Moderacja</button>
   </nav>
  </div>
 </header>
@@ -171,6 +172,15 @@ footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-siz
    <button class="ghost danger" onclick="clearData()">Usuń lokalne dane SZEPT</button>
   </div>
  </section>
+ 
+<section id="moderation" class="page">
+  <div class="card">
+    <h2>Panel moderacji SZEPT</h2>
+    <p>Wiersze oczekujące na zatwierdzenie</p>
+    <div id="moderationList"></div>
+  </div>
+</section>
+
 </main>
 <footer><div class="shell">☾ SZEPT · Twoje słowa. Czyjeś emocje. <span style="float:right">Wersja demonstracyjna 0.1</span></div></footer>
 <div id="toast" class="toast" role="status"></div>
@@ -382,7 +392,25 @@ document.getElementById('formularz-wiersza').addEventListener('submit', async fu
     komunikat.textContent = 'Błąd: ' + error.message;
   }
 });
+ 
+async function sprawdzModeratora() {
+  const przycisk = document.getElementById('moderationBtn');
+  if (!przycisk) return;
+
+  przycisk.style.display = 'none';
+
+  const { data: { user }, error } = await db.auth.getUser();
+  if (error || !user) return;
+
+  if (user.app_metadata?.role === 'admin') {
+    przycisk.style.display = '';
+  }
+}
+
+sprawdzModeratora();
+
 </script>
 </body>
 </html>
+<!-- Panel moderacji SZEPT -->
 
