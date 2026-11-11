@@ -431,6 +431,15 @@ async function pokazOczekujaceWiersze() {
     const element = document.createElement('div');
     element.textContent = (wiersz.title || 'Bez tytułu') + ': ' + wiersz.content;
     lista.appendChild(element);
+   const przycisk = document.createElement('button');
+   przycisk.textContent = 'Zatwierdź';
+   element.appendChild(przycisk);
+   przycisk.onclick = async () => {
+    if (!confirm('Czy na pewno zatwierdzić ten wiersz?')) return;
+    const { error } = await db.from('Poems').update({ status: 'published' }).eq('id', wiersz.id);
+    if (error) { alert('Błąd: ' + error.message); return; }
+    await pokazOczekujaceWiersze();
+    };
   });
 }
 
