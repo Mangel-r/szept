@@ -436,7 +436,7 @@ async function pokazOczekujaceWiersze() {
    element.appendChild(przycisk);
    przycisk.onclick = async () => {
     if (!confirm('Czy na pewno zatwierdzić ten wiersz?')) return;
-    const { error } = await db.from('Poems').update({ status: 'published' }).eq('id', wiersz.id);
+   const { error } = await db.rpc('moderate_poem', { p_poem_id: wiersz.id, p_new_status: 'published' });
     if (error) { alert('Błąd: ' + error.message); return; }
     await pokazOczekujaceWiersze();
     };
