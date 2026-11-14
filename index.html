@@ -7,12 +7,9 @@
 <meta name="theme-color" content="#090f20">
 <title>SZEPT — Twoje słowa. Czyjeś emocje.</title>
 <style>
- body {
- background: url("szept-morze.png") center center/ cover fixed no-repeat !important;
-}
- html body {
-  background: url("szept-morze.png")center center / cover fixed no-repeat !important;
-}
+/* Tło strony jest ciemne; obraz morza należy tylko do banera. */
+html { background: #080e1d; }
+body { background: #080e1d !important; }
 :root{
  --bg:#080e1d;--panel:#101a30;--panel2:#15213b;--line:#263552;
  --text:#f4f0e7;--muted:#a8b2c7;--gold:#e5c98a;--lav:#b9a8ee;
@@ -27,7 +24,7 @@ button,input,textarea,select{font:inherit}
 button{cursor:pointer}
 a{color:var(--gold)}
 .shell{max-width:1160px;margin:auto;padding:0 22px}
-header{position:sticky;top:0;z-index:10;background:#080e1ddd;backdrop-filter:blur(16px);
+header{position:sticky;top:0;z-index:10;background:#080e1ddd;backdrop-filter:blur(16px)}
 .topbar{height:76px;display:flex;align-items:center;justify-content:space-between;gap:18px}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--text)}
 .moon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#e9d49d,#a68fd4);color:#11172a;font-size:22px;box-shadow:0 0 28px #d4c18b44}
@@ -41,8 +38,35 @@ nav{display:flex;gap:7px;flex-wrap:wrap}
 .soft{background:#ffffff0b;border-color:#ffffff18;color:var(--text)}
 .ghost{border-color:#ffffff20;color:var(--text)}
 .danger{color:var(--danger)}
-.hero{padding:0 42px;display:grid;grid-template-columns:1.15fr .85fr;gap:35px;align-items:center}
-.eyebrow{color:#000000;letter-spacing:2px;font-family:'Brush Script MT',cursive;font-size:24px;text-transform:nonese;font-size:11px;font-weight:700}
+/* Osobny obraz i osobny tekst: nic nie przykrywa złotego logo. */
+.sea-banner{
+  position:relative;
+  width:100%;
+  aspect-ratio:16 / 9;
+  background:#080e1d url("szept-morze.png") center center / contain no-repeat;
+  overflow:hidden;
+}
+.sea-caption{
+   position:absolute;right:3%;top:5%;
+   max-width:42%;padding:0;
+   border:0;border-radius:0;
+   background:transparent;
+   color:#fff1cc;
+   font-size:clamp(12px,1.55vw,20px);
+   font-family:Georgia,serif;
+   letter-spacing:.04em;
+   text-align:right;
+   text-shadow:0 2px 6px #000,0 0 12px #0009;
+}
+.hero{
+  display:block;
+  padding:38px 32px 45px;
+  background:linear-gradient(180deg,#101a30,#080e1d);
+  border-bottom:1px solid #ffffff18;
+}
+.hero h1{max-width:850px;font-size:clamp(34px,5vw,60px);line-height:1.14;letter-spacing:-1px;}
+.hero .lead{max-width:760px;color:#d7ddea;}
+.eyebrow{color:var(--gold);letter-spacing:2px;text-transform:uppercase;font-size:11px;font-weight:700}
 h1,h2,h3,.poem-title{font-family:Georgia,'Times New Roman',serif;font-weight:500}
 h1{font-size:clamp(42px,6vw,76px);line-height:1.02;letter-spacing:-2px;margin:14px 0 18px}
 h1 em{color:var(--gold);font-weight:400}
@@ -95,6 +119,8 @@ footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-siz
 .notice{border:1px solid #d9c28a55;background:#d9c28a0d;color:#e9dcb9;border-radius:13px;padding:13px 15px;font-size:13px;margin:16px 0}
 @media(max-width:800px){.hero{grid-template-columns:1fr;padding-top:45px}.hero-art{min-height:220px}.grid{grid-template-columns:repeat(2,1fr)}.topbar{height:auto;min-height:70px;align-items:flex-start;padding-top:15px;padding-bottom:12px;flex-direction:column}nav{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}.navbtn{white-space:nowrap}.section-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:540px){.shell{padding:0 15px}.grid{grid-template-columns:1fr}.hero{padding-top:35px}.hero-art{min-height:190px}.profile-stat{gap:7px}.stat strong{font-size:23px}h2{font-size:28px}.card{padding:17px}}
+@media(max-width:800px){.hero{padding:28px 20px 36px;display:block}.sea-caption{right:3%;top:5%;max-width:43%;padding:0}}
+@media(max-width:540px){.hero{padding:24px 16px 32px}.hero h1{font-size:clamp(30px,8vw,42px)}.sea-caption{font-size:11px;right:3%;top:5%;max-width:48%;padding:0}}
 </style>
 </head>
 <body>
@@ -114,18 +140,15 @@ footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-siz
 </header>
 <main class="shell">
  <section id="home" class="page active">
-  <div class="hero">
-   <div>
-    <div class="eyebrow">Przystań dla słów i emocji</div>
-    <h1>Nie wszystko trzeba<br><em>powiedzieć na głos.</em></h1>
-    <p class="lead">Czasami wystarczy napisać wiersz, żeby ktoś po drugiej stronie świata poczuł to samo. Czytaj, pisz i wysyłaj swoje słowa w nieznane.</p>
-    <div class="hero-actions"><button class="primary" onclick="showPage('library')">Odkryj poezję</button><button class="ghost" onclick="showPage('write')">Napisz swój wiersz</button></div>
-   </div>
-   
-
-   <!--<div class="hero-art" aria-label="Księżyc nad nocnym morzem"><div class="stars"></div><div class="wave"></div><div class="wave two"></div><div class="bottle">🍾</div></div>
+  <div class="sea-banner" role="img" aria-label="Morze z butelką i złotym logo SZEPT">
+   <div class="sea-caption">Przystań dla słów i emocji</div>
   </div>
-  --><div class="section">
+  <div class="hero">
+   <h1>Nie wszystko trzeba<br><em>powiedzieć na głos.</em></h1>
+   <p class="lead">Czasami wystarczy napisać wiersz, żeby ktoś po drugiej stronie świata poczuł to samo. Czytaj, pisz i wysyłaj swoje słowa w nieznane.</p>
+   <div class="hero-actions"><button class="primary" onclick="showPage('library')">Odkryj poezję</button><button class="ghost" onclick="showPage('write')">Napisz swój wiersz</button></div>
+  </div>
+  <div class="section">
    <div class="section-head"><div><div class="eyebrow">Słowa, które zostają</div><h2>Na dobry początek</h2><p class="sub">Kilka wierszy czeka, aż je odkryjesz.</p></div><button class="soft" onclick="showPage('library')">Cała czytelnia →</button></div>
    <div id="homePoems" class="grid"></div>
   </div>
@@ -228,7 +251,7 @@ document.getElementById('poemForm').addEventListener('submit',async e=>{
  if(!title||!body||button.disabled)return;
  button.disabled=true;button.textContent='Publikowanie…';
  try {
-  await await wiersz_opublikowany(title,body,emotion);
+  await Wiersz_opublikowany(title,body,emotion);
   form.reset();localStorage.removeItem(KEY+'-draft');
   await refreshSharedPoems();
   toast('Twój wiersz został wysłany do moderacji. Pojawi się w Czytelni po zatwierdzeniu.');showPage('library');
