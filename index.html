@@ -434,7 +434,7 @@ async function sprawdzModeratora() {
   przycisk.style.display = 'none';
 
   const { data: { user }, error } = await db.auth.getUser();
-  if (error || !user) return;
+  if (error || !user|| user.is_anonymous) return;
 
   if (user.app_metadata?.role === 'admin') {
     przycisk.style.display = '';
