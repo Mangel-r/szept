@@ -234,7 +234,7 @@ function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function allPoems(){return [...sharedPoems,...state.poems.map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile')renderProfile();if(id==='bottle')renderBottleSelect();window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile')renderProfile();if(id==='bottle')renderBottleSelect();if(id==='moderation')pokazOczekujaceWiersze();window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function poemCard(p){let own=!!p.local;let saved=state.saved.includes(p.id);return `<article class="card poem-card"><div><span class="tag">${escapeHTML(p.emotion)}</span></div><h3 class="poem-title">${escapeHTML(p.title)}</h3><div class="poem-excerpt">${escapeHTML(p.body)}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':p.local?'Tylko na tym urządzeniu':'Opublikowany'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'♥ Zapisano':'♡ Zapisz'}</button>${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`}
 function renderHome(){document.getElementById('homePoems').innerHTML=allPoems().slice(0,3).map(poemCard).join('')}
@@ -389,6 +389,7 @@ refreshSharedPoems();
     szeptKomunikat(error
       ? 'Błąd: ' + error.message
       : 'Zalogowano pomyślnie!');
+    if (!error) await sprawdzModeratora();
   }
 
   async function szeptWyloguj() {
@@ -397,6 +398,7 @@ refreshSharedPoems();
     szeptKomunikat(error
       ? 'Błąd: ' + error.message
       : 'Wylogowano.');
+    if (!error) { await sprawdzModeratora(); showPage('home'); }
   }
 </script>
 
