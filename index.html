@@ -572,39 +572,42 @@ async function sprawdzModeratora() {
   }
 }
 
+let adminStatus='all';
+document.querySelectorAll('#adminFilters button').forEach(btn=>btn.addEventListener('click',()=>{
+ adminStatus=btn.dataset.status;
+ document.querySelectorAll('#adminFilters button').forEach(b=>b.classList.toggle('active',b===btn));
+ pokazOczekujaceWiersze();
+}));
 async function pokazOczekujaceWiersze() {
-  const lista = document.getElementById('moderationList');
-  if (!lista || !szeptCzyAdmin) return;
-
-  const { data, error } = await db.from('Poems')
-    .select('id,title,content')
-    .eq('status', 'pending');
-
-  if (error) {
-    lista.textContent = 'Błąd: ' + error.message;
-    return;
-  }
-
-  lista.replaceChildren();
-  if (!data.length) {
-    lista.textContent = 'Brak wierszy do zatwierdzenia.';
-    return;
-  }
-
-  data.forEach(wiersz => {
-    const element = document.createElement('div');
-    element.textContent = (wiersz.title || 'Bez tytułu') + ': ' + wiersz.content;
-    lista.appendChild(element);
-   const przycisk = document.createElement('button');
-   przycisk.textContent = 'Zatwierdź';
-   element.appendChild(przycisk);
-   przycisk.onclick = async () => {
-    if (!confirm('Czy na pewno zatwierdzić ten wiersz?')) return;
-   const { error } = await db.rpc('moderate_poem', { p_poem_id: wiersz.id, p_new_status: 'published' });
-    if (error) { alert('Błąd: ' + error.message); return; }
-    await pokazOczekujaceWiersze();
-    };
-  });
+ const lista=document.getElementById('moderationList');
+ if(!lista||!szeptCzyAdmin)return;
+ lista.textContent='Pobieram wiersze…';
+ const {data,error}=await db.rpc('szept_admin_list_poems');
+ if(error){lista.textContent='Nie można pobrać wierszy. Najpierw uruchom dołączony plik SQL w Supabase. Szczegóły: '+error.message;return;}
+ const poems=(data||[]).filter(p=>adminStatus==='all'||p.status===adminStatus);
+ lista.replaceChildren();
+ if(!poems.length){lista.textContent='Brak wierszy w tej kategorii.';return;}
+ for(const poem of poems){
+  const card=document.createElement('article');card.className='card';card.style.margin='12px 0';
+  const heading=document.createElement('h3');heading.textContent='#'+poem.id+' · '+(poem.title||'Bez tytułu');card.appendChild(heading);
+  const meta=document.createElement('p');meta.className='hint';meta.textContent='Status: '+poem.status+' · '+(poem.emotion||'')+' · '+(poem.created_at?new Date(poem.created_at).toLocaleString('pl-PL'):'');card.appendChild(meta);
+  const content=document.createElement('div');content.style.whiteSpace='pre-wrap';content.style.maxHeight='180px';content.style.overflow='auto';content.textContent=poem.content||'';card.appendChild(content);
+  const actions=document.createElement('div');actions.className='card-actions';card.appendChild(actions);
+  function action(label,callback,danger=false){const b=document.createElement('button');b.className='soft'+(danger?' danger':'');b.textContent=label;b.onclick=callback;actions.appendChild(b);}
+  async function statusChange(status){if(!confirm('Zmienić status tego wiersza na '+status+'?'))return;await adminCall('szept_admin_set_status',{p_poem_id:poem.id,p_status:status});}
+  if(poem.status!=='published')action('✓ Opublikuj',()=>statusChange('published'));
+  if(poem.status!=='rejected')action('Odrzuć',()=>statusChange('rejected'));
+  action('✎ Zmień tytuł',async()=>{const title=prompt('Nowy tytuł wiersza:',poem.title||'');if(title===null)return;if(!title.trim()){alert('Tytuł nie może być pusty.');return;}await adminCall('szept_admin_rename_poem',{p_poem_id:poem.id,p_title:title.trim()});});
+  action('🗑 Usuń',async()=>{if(!confirm('TRWALE USUNĄĆ wiersz #'+poem.id+' „'+(poem.title||'Bez tytułu')+'”? Tej operacji nie można cofnąć.'))return;await adminCall('szept_admin_delete_poem',{p_poem_id:poem.id});},true);
+  lista.appendChild(card);
+ }
+}
+async function adminCall(name,args){
+ if(!szeptCzyAdmin){alert('Brak uprawnień administratora.');return;}
+ const {error}=await db.rpc(name,args);
+ if(error){alert('Nie udało się wykonać operacji: '+error.message);return;}
+ await Promise.all([pokazOczekujaceWiersze(),refreshSharedPoems()]);
+ toast('Zmiany zapisane.');
 }
 
 db.auth.onAuthStateChange(() => {
