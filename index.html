@@ -270,7 +270,7 @@ let sharedLoadError=false;
 let szeptCzyAdmin=false;
 function load(){try{let x=JSON.parse(localStorage.getItem(KEY));return x||{poems:[],saved:[],bottles:[],profile:{}}}catch(e){return {poems:[],saved:[],bottles:[],profile:{}}}}
 function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
-function allPoems(){return [...sharedPoems,...state.poems.map(p=>({...p,local:true})),...demo]}
+function allPoems(){return [...sharedPoems,...state.poems.filter(p=>!['Kiedy miasto zasypia','Małe światło','Mapa twoich dłoni'].includes((p.title||'').trim())).map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
 function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile')renderProfile();if(id==='bottle')renderBottleSelect();window.scrollTo({top:0,behavior:'smooth'})}
@@ -533,4 +533,3 @@ sprawdzModeratora();
 </body>
 </html>
 <!-- Panel moderacji SZEPT -->
-
