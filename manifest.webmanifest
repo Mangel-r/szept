@@ -1,0 +1,25 @@
+{
+  "name": "SZEPT — Twoje słowa. Czyjeś emocje.",
+  "short_name": "SZEPT",
+  "description": "Przystań dla słów i emocji. Czytaj i publikuj wiersze.",
+  "lang": "pl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#06152a",
+  "theme_color": "#090f20",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
