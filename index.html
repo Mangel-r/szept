@@ -251,9 +251,9 @@ footer { background:rgba(5,14,30,.38); }
     <div class="field"><label for="body">Treść wiersza</label><textarea id="body" maxlength="5000" placeholder="Zapisz tutaj swoje słowa..." required></textarea><div class="hint">Maksymalnie 5000 znaków. Zachowujemy podział na wersy.</div></div>
     <div class="row">
      <div class="field"><label for="emotion">Emocja</label><select id="emotion"><option>Miłość</option><option>Tęsknota</option><option>Samotność</option><option>Nadzieja</option><option>Smutek</option><option>Szczęście</option><option>Rozstanie</option><option>Nowy początek</option></select></div>
-     <div class="field"><label for="author">Podpis (lokalny profil)</label><input id="author" maxlength="32" placeholder="Pseudonim nie jest jeszcze publikowany" disabled></div>
+     <div class="field"><label for="author">Pseudonim autora</label><input id="author" maxlength="32" placeholder="Twój pseudonim (jeśli nie anonimowo)"></div>
     </div>
-    <label class="row" style="justify-content:flex-start;margin:8px 0 18px"><input id="anonymous" type="checkbox" style="width:auto" checked disabled> <span>Na razie wszystkie nowe wiersze są publikowane anonimowo</span></label>
+    <label class="row" style="justify-content:flex-start;margin:8px 0 18px"><input id="anonymous" type="checkbox" style="width:auto" checked> <span>Chcę opublikować anonimowo</span></label>
     <div class="row"><button class="primary" type="submit">Opublikuj wiersz</button><button class="soft" type="button" onclick="saveDraft()">Zapisz szkic</button></div>
    </form>
   </div>
@@ -330,12 +330,15 @@ document.getElementById('poemForm').addEventListener('submit',async e=>{
  e.preventDefault();
  const form=e.currentTarget, button=form.querySelector('button[type="submit"]');
  const title=document.getElementById('title').value.trim(), body=document.getElementById('body').value.trim();
- const emotion=document.getElementById('emotion').value;
+   const emotion=document.getElementById('emotion').value;
+  const anonymous=document.getElementById('anonymous').checked;
+  const signature=anonymous?null:document.getElementById('author').value.trim();
+  if(!anonymous&&!signature){alert('Wpisz pseudonim albo zaznacz anonimowość.');return;}
  if(!title||!body||button.disabled)return;
  button.disabled=true;button.textContent='Publikowanie…';
  try {
-  await Wiersz_opublikowany(title,body,emotion);
-  form.reset();localStorage.removeItem(KEY+'-draft');
+  await Wiersz_opublikowany(title,body,emotion,signature);
+    form.reset();document.getElementById('author').disabled=true;localStorage.removeItem(KEY+'-draft');
   await refreshSharedPoems();
   toast('Twój wiersz został wysłany do moderacji. Pojawi się w Czytelni po zatwierdzeniu.');showPage('library');
  } catch(error) {
@@ -401,7 +404,7 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-async function Wiersz_opublikowany(title, content, emotion) {
+async function Wiersz_opublikowany(title, content, emotion, signature=null) {
   let {data:{session},error:sessionError}=await db.auth.getSession();
   if(sessionError)throw sessionError;
  
@@ -410,17 +413,17 @@ async function Wiersz_opublikowany(title, content, emotion) {
 }
   if(!session?.user?.id)throw new Error('Brak identyfikatora użytkownika');
   const {error}=await db.from('Poems').insert({
-    title,content,emotion,user_id:session.user.id,status:'pending'
+    title,content,emotion,user_id:session.user.id,status:'pending',author_signature:signature
   });
   if(error)throw error;
 }
 async function refreshSharedPoems(){
  try{
   const {data,error}=await db.from('Poems')
-    .select('id,title,content,emotion,created_at')
+    .select('id,title,content,emotion,created_at,author_signature')
     .eq('status','published').order('created_at',{ascending:false}).limit(200);
   if(error)throw error;
-  sharedPoems=(data||[]).map(p=>({id:'s'+p.id,title:p.title||'',body:p.content||'',emotion:p.emotion||'',author:'Anonim',demo:false,local:false,created:p.created_at}));
+  sharedPoems=(data||[]).map(p=>({id:'s'+p.id,title:p.title||'',body:p.content||'',emotion:p.emotion||'',author:p.author_signature||'Anonim',demo:false,local:false,created:p.created_at}));
   sharedLoadError=false;
  }catch(error){console.error('Nie udało się pobrać wierszy:',error);sharedLoadError=true;}
  renderHome();renderLibrary();renderSaved();
@@ -434,12 +437,12 @@ refreshSharedPoems();
 
 <form id="formularz-wiersza">
     <label for="autor">Podpis autora</label>
-    <input id="autor" name="author" type="text"
+         <input id="autor" name="author" type="text" maxlength="32"
            placeholder="Imię lub pseudonim">
 
     <label>
-      <input type="checkbox">
-      Chcę pozostać anonimowo
+      <input id="anonim-drugi" type="checkbox" checked>
+       Chcę pozostać anonimowo
     </label>
 
     <label for="tresc">Twój tekst</label>
@@ -542,7 +545,9 @@ document.getElementById('formularz-wiersza').addEventListener('submit', async fu
     const content = document.getElementById('tresc').value.trim();
     if (!content) throw new Error('Najpierw wpisz swój wiersz.');
 
-  await Wiersz_opublikowany('Bez tytułu', content, 'Inne');
+     const signature=document.getElementById('anonim-drugi').checked?null:document.getElementById('autor').value.trim();
+   if(!document.getElementById('anonim-drugi').checked&&!signature)throw new Error('Wpisz pseudonim albo wybierz anonimowość.');
+   await Wiersz_opublikowany('Bez tytułu', content, 'Inne', signature);
 
     komunikat.textContent = 'Wiersz wysłany do moderacji!';
     this.reset();
@@ -584,20 +589,23 @@ async function pokazOczekujaceWiersze() {
  lista.textContent='Pobieram wiersze…';
  const {data,error}=await db.rpc('szept_admin_list_poems');
  if(error){lista.textContent='Nie można pobrać wierszy. Najpierw uruchom dołączony plik SQL w Supabase. Szczegóły: '+error.message;return;}
- const poems=(data||[]).filter(p=>adminStatus==='all'||p.status===adminStatus);
+   const {data:signatures,error:signatureError}=await db.rpc('szept_admin_list_signatures');
+  const byId=new Map((signatureError?[]:signatures||[]).map(p=>[String(p.id),p.author_signature]));
+  const poems=(data||[]).filter(p=>adminStatus==='all'||p.status===adminStatus).map(p=>({...p,author_signature:byId.get(String(p.id))||null}));
  lista.replaceChildren();
  if(!poems.length){lista.textContent='Brak wierszy w tej kategorii.';return;}
  for(const poem of poems){
   const card=document.createElement('article');card.className='card';card.style.margin='12px 0';
   const heading=document.createElement('h3');heading.textContent='#'+poem.id+' · '+(poem.title||'Bez tytułu');card.appendChild(heading);
-  const meta=document.createElement('p');meta.className='hint';meta.textContent='Status: '+poem.status+' · '+(poem.emotion||'')+' · '+(poem.created_at?new Date(poem.created_at).toLocaleString('pl-PL'):'');card.appendChild(meta);
+     const meta=document.createElement('p');meta.className='hint';meta.textContent='Autor: '+(poem.author_signature||'Anonim')+' · Status: '+poem.status+' · '+(poem.emotion||'')+' · '+(poem.created_at?new Date(poem.created_at).toLocaleString('pl-PL'):'');card.appendChild(meta);
   const content=document.createElement('div');content.style.whiteSpace='pre-wrap';content.style.maxHeight='180px';content.style.overflow='auto';content.textContent=poem.content||'';card.appendChild(content);
   const actions=document.createElement('div');actions.className='card-actions';card.appendChild(actions);
   function action(label,callback,danger=false){const b=document.createElement('button');b.className='soft'+(danger?' danger':'');b.textContent=label;b.onclick=callback;actions.appendChild(b);}
   async function statusChange(status){if(!confirm('Zmienić status tego wiersza na '+status+'?'))return;await adminCall('szept_admin_set_status',{p_poem_id:poem.id,p_status:status});}
   if(poem.status!=='published')action('✓ Opublikuj',()=>statusChange('published'));
   if(poem.status!=='rejected')action('Odrzuć',()=>statusChange('rejected'));
-  action('✎ Zmień tytuł',async()=>{const title=prompt('Nowy tytuł wiersza:',poem.title||'');if(title===null)return;if(!title.trim()){alert('Tytuł nie może być pusty.');return;}await adminCall('szept_admin_rename_poem',{p_poem_id:poem.id,p_title:title.trim()});});
+     action('✍ Zmień podpis',async()=>{const signature=prompt('Pseudonim autora (pozostaw puste, aby zachować anonimowość):',poem.author_signature||'');if(signature===null)return;if(signature.trim().length>32){alert('Maksymalnie 32 znaki.');return;}if(!confirm('Czy masz pewność, że ten podpis należy do autora?'))return;await adminCall('szept_admin_set_signature',{p_poem_id:poem.id,p_signature:signature.trim()||null});});
+   action('✎ Zmień tytuł',async()=>{const title=prompt('Nowy tytuł wiersza:',poem.title||'');if(title===null)return;if(!title.trim()){alert('Tytuł nie może być pusty.');return;}await adminCall('szept_admin_rename_poem',{p_poem_id:poem.id,p_title:title.trim()});});
   action('🗑 Usuń',async()=>{if(!confirm('TRWALE USUNĄĆ wiersz #'+poem.id+' „'+(poem.title||'Bez tytułu')+'”? Tej operacji nie można cofnąć.'))return;await adminCall('szept_admin_delete_poem',{p_poem_id:poem.id});},true);
   lista.appendChild(card);
  }
@@ -614,8 +622,12 @@ db.auth.onAuthStateChange(() => {
   // Odczekaj do zakończenia aktualizacji sesji, zanim pobierzesz użytkownika.
   setTimeout(() => { sprawdzModeratora(); if(document.getElementById('bottle').classList.contains('active')){renderBottleSelect();loadReceivedBottles();} }, 0);
 });
-sprawdzModeratora();
-
+ sprawdzModeratora();
+ document.getElementById('anonymous').addEventListener('change',e=>{document.getElementById('author').disabled=e.target.checked;});
+ document.getElementById('author').disabled=true;
+ document.getElementById('anonim-drugi').addEventListener('change',e=>{document.getElementById('autor').disabled=e.target.checked;});
+ document.getElementById('autor').disabled=true;
+ 
 </script>
 
 <script>
