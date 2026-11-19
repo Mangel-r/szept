@@ -203,6 +203,118 @@ footer { background:rgba(5,14,30,.38); }
 }
 @media (max-width:380px){header nav .navbtn{min-width:61px;font-size:11px;padding:10px 7px}.poem-card{padding:27px 22px!important}}
 
+
+
+/* === FINALNY STYL KARTEK: pergamin / stary papier === */
+.grid{align-items:start}
+#homePoems.grid,#poemList.grid,#savedList.grid{gap:22px}
+#receivedBottles{max-width:780px;margin:22px auto 0;text-align:left}
+#receivedBottles .poem-card{margin-bottom:20px !important}
+
+.poem-card{
+  --tilt:0deg;
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  min-height:245px;
+  padding:30px 28px 26px !important;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(255,249,235,.95) 0%, rgba(255,249,235,.92) 10%, transparent 35%),
+    radial-gradient(circle at 82% 88%, rgba(197,137,73,.14), transparent 34%),
+    linear-gradient(180deg, #f7e9ca 0%, #efd9b0 46%, #e8c896 100%) !important;
+  color:#392819 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:
+    0 15px 30px rgba(0,0,0,.28),
+    inset 0 0 0 1px rgba(135,89,41,.12),
+    inset 0 0 42px rgba(112,70,25,.14) !important;
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.20));
+  clip-path:polygon(
+    0% 3%, 3% 0%, 7% 2%, 11% 0%, 15% 3%, 20% 1%, 25% 0%, 31% 2%, 37% 0%, 43% 2%, 49% 0%, 56% 2%, 63% 0%, 70% 2%, 77% 0%, 84% 3%, 91% 0%, 97% 2%, 100% 0%,
+    98% 9%, 100% 15%, 97% 22%, 100% 29%, 98% 36%, 100% 44%, 97% 52%, 100% 60%, 98% 68%, 100% 77%, 97% 86%, 100% 100%,
+    93% 98%, 86% 100%, 79% 97%, 72% 100%, 65% 98%, 58% 100%, 51% 97%, 44% 100%, 36% 98%, 29% 100%, 22% 97%, 15% 100%, 8% 98%, 0% 100%,
+    2% 89%, 0% 81%, 3% 73%, 0% 64%, 2% 56%, 0% 47%, 3% 38%, 0% 29%, 2% 20%, 0% 11%
+  );
+  transform:rotate(var(--tilt));
+}
+
+.poem-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(117,59,18,.24), transparent 24%),
+    radial-gradient(circle at 100% 0%, rgba(117,59,18,.22), transparent 24%),
+    radial-gradient(circle at 100% 100%, rgba(117,59,18,.24), transparent 22%),
+    radial-gradient(circle at 0% 100%, rgba(117,59,18,.20), transparent 20%),
+    repeating-linear-gradient(180deg, rgba(255,255,255,.05) 0 2px, rgba(0,0,0,.02) 2px 4px);
+  mix-blend-mode:multiply;
+  opacity:.62;
+}
+
+.poem-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  box-shadow:inset 0 0 30px rgba(110,63,24,.16), inset 0 0 65px rgba(86,43,8,.08);
+}
+
+#homePoems .poem-card:nth-child(3n+1),
+#poemList .poem-card:nth-child(3n+1),
+#savedList .poem-card:nth-child(3n+1),
+#receivedBottles .poem-card:nth-child(odd){--tilt:-1.4deg}
+
+#homePoems .poem-card:nth-child(3n+2),
+#poemList .poem-card:nth-child(3n+2),
+#savedList .poem-card:nth-child(3n+2),
+#receivedBottles .poem-card:nth-child(even){--tilt:1deg}
+
+#homePoems .poem-card:nth-child(3n+3),
+#poemList .poem-card:nth-child(3n+3),
+#savedList .poem-card:nth-child(3n+3){--tilt:-.5deg}
+
+.poem-card .poem-title{
+  color:#382515;
+  font-size:clamp(28px,2vw,42px);
+  line-height:1.08;
+  margin:8px 0 14px;
+}
+.poem-card .poem-excerpt{
+  color:#4f3b2d;
+  line-height:1.58;
+  font-size:clamp(17px,1.5vw,18px);
+}
+.poem-card .meta{
+  color:#755744;
+  font-size:12px;
+  margin-top:18px;
+}
+.poem-card .tag{
+  color:#664622;
+  background:#e8ce99;
+  border:1px solid rgba(145,102,50,.36);
+  box-shadow:0 2px 4px rgba(128,90,41,.12);
+}
+.poem-card .card-actions button{
+  color:#523821;
+  border-color:#b79263;
+  background:rgba(250,238,213,.72);
+}
+.poem-card .card-actions button:hover{
+  background:#ecd7b4;
+}
+
+@media(max-width:800px){
+  .poem-card{transform:none;min-height:220px;padding:28px 24px 24px !important}
+  #homePoems.grid,#poemList.grid,#savedList.grid{gap:18px}
+}
+@media(max-width:540px){
+  .poem-card .poem-title{font-size:clamp(24px,7vw,34px)}
+  .poem-card .poem-excerpt{font-size:16px}
+}
 </style>
 </head>
 <body>
