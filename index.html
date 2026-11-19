@@ -288,6 +288,11 @@ footer { background:rgba(5,14,30,.38); }
    <div class="field"><label for="bio">Kilka słów o Tobie</label><textarea id="bio" style="min-height:90px" maxlength="240" placeholder="Lubię pisać o..."></textarea></div>
    <button class="primary" onclick="saveProfile()">Zapisz profil</button>
    <div class="profile-stat"><div class="stat"><strong id="myCount">0</strong><span class="hint">Moje wiersze</span></div><div class="stat"><strong id="savedCount">0</strong><span class="hint">Zapisane</span></div><div class="stat"><strong id="bottleCount">0</strong><span class="hint">Butelki</span></div></div>
+   <div class="card" style="margin:24px 0;background:#0b1529;border:1px solid #35415d">
+    <h3>Moje opublikowane wiersze ✍️</h3>
+    <p class="hint">Tutaj zmienisz podpis „Anonim” na swój pseudonim. Tylko Ty możesz zmieniać podpisy swoich wierszy.</p>
+    <div id="myPublishedPoems" aria-live="polite">Wczytywanie wierszy…</div>
+   </div>
    <div class="notice">Profil jest obecnie zapisany wyłącznie w tej przeglądarce.</div>
    <button class="ghost danger" onclick="clearData()">Usuń lokalne dane SZEPT</button>
   </div>
@@ -317,7 +322,7 @@ function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function allPoems(){return [...sharedPoems,...state.poems.filter(p=>!['Kiedy miasto zasypia','Małe światło','Mapa twoich dłoni'].includes((p.title||'').trim())).map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile')renderProfile();if(id==='bottle'){renderBottleSelect();loadReceivedBottles();}window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile'){renderProfile();loadMyPublishedPoems();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();}window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function poemCard(p){let own=!!p.local;let saved=state.saved.includes(p.id);return `<article class="card poem-card"><div><span class="tag">${escapeHTML(p.emotion)}</span></div><h3 class="poem-title">${escapeHTML(p.title)}</h3><div class="poem-excerpt">${escapeHTML(p.body)}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':p.local?'Tylko na tym urządzeniu':'Opublikowany'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'♥ Zapisano':'♡ Zapisz'}</button>${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`}
 function renderHome(){document.getElementById('homePoems').innerHTML=allPoems().slice(0,3).map(poemCard).join('')}
@@ -618,9 +623,44 @@ async function adminCall(name,args){
  toast('Zmiany zapisane.');
 }
 
+async function loadMyPublishedPoems(){
+ const root=document.getElementById('myPublishedPoems');
+ if(!root)return;
+ root.textContent='Wczytywanie wierszy…';
+ try{
+  const {data:{user},error:authError}=await db.auth.getUser();
+  if(authError)throw authError;
+  if(!user || user.is_anonymous){root.textContent='Zaloguj się na konto, z którego opublikowano wiersze.';return;}
+  const {data,error}=await db.rpc('szept_my_published_poems');
+  if(error)throw error;
+  root.replaceChildren();
+  if(!data?.length){root.textContent='Nie znaleziono opublikowanych wierszy przypisanych do tego konta.';return;}
+  for(const poem of data){
+   const card=document.createElement('div');card.className='card';card.style.margin='10px 0';
+   const title=document.createElement('h3');title.textContent=poem.title||'Bez tytułu';card.appendChild(title);
+   const sign=document.createElement('p');sign.className='hint';sign.textContent='Podpis: '+(poem.author_signature||'Anonim');card.appendChild(sign);
+   const button=document.createElement('button');button.className='soft';button.textContent='✍ Zmień podpis';
+   button.addEventListener('click',async()=>{
+    const proposed=prompt('Wpisz swój pseudonim (maks. 32 znaki). Puste pole oznacza „Anonim”:',poem.author_signature||'');
+    if(proposed===null)return;
+    const signature=proposed.trim();
+    if(signature.length>32){alert('Pseudonim może mieć maksymalnie 32 znaki.');return;}
+    button.disabled=true;
+    try{
+     const {error}=await db.rpc('szept_set_my_poem_signature',{p_poem_id:poem.id,p_signature:signature||null});
+     if(error)throw error;
+     await Promise.all([loadMyPublishedPoems(),refreshSharedPoems()]);
+     toast('Podpis wiersza zapisany ❤️');
+    }catch(err){alert('Nie udało się zmienić podpisu: '+err.message);button.disabled=false;}
+   });
+   card.appendChild(button);root.appendChild(card);
+  }
+ }catch(err){root.textContent='Nie udało się pobrać Twoich wierszy: '+err.message;}
+}
+
 db.auth.onAuthStateChange(() => {
   // Odczekaj do zakończenia aktualizacji sesji, zanim pobierzesz użytkownika.
-  setTimeout(() => { sprawdzModeratora(); if(document.getElementById('bottle').classList.contains('active')){renderBottleSelect();loadReceivedBottles();} }, 0);
+  setTimeout(() => { sprawdzModeratora(); if(document.getElementById('profile').classList.contains('active'))loadMyPublishedPoems(); if(document.getElementById('bottle').classList.contains('active')){renderBottleSelect();loadReceivedBottles();} }, 0);
 });
  sprawdzModeratora();
  document.getElementById('anonymous').addEventListener('change',e=>{document.getElementById('author').disabled=e.target.checked;});
