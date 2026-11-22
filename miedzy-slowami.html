@@ -295,3 +295,36 @@ document.getElementById('copy').addEventListener('click',async function(){
 
 </body>
 </html>
+<style>
+.zlote-pioro {
+  position: fixed;
+  top: 13%;
+  right: 12%;
+  font-size: 90px;
+  z-index: 9999;
+  filter: drop-shadow(0 0 18px #ffd700);
+  animation: pioroLot 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pioroLot {
+  0%, 100% {
+    transform: translateY(0) rotate(-25deg);
+  }
+  50% {
+    transform: translateY(35px) rotate(15deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .zlote-pioro {
+    font-size: 65px;
+    top: 12%;
+    right: 5%;
+  }
+}
+</style>
+
+<div class="zlote-pioro">🪶</div>
+</body>
+</html>
