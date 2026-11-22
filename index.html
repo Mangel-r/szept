@@ -661,7 +661,7 @@ async function loadSentBottles(){
 function saveProfile(){state.profile.nickname=document.getElementById('nickname').value.trim();state.profile.bio=document.getElementById('bio').value.trim();persist();toast('Profil zapisany')}
 function renderProfile(){document.getElementById('nickname').value=state.profile.nickname||'';document.getElementById('bio').value=state.profile.bio||'';document.getElementById('myCount').textContent=state.poems.length;document.getElementById('savedCount').textContent=state.saved.length;document.getElementById('bottleCount').textContent=state.bottles.length}
 function clearData(){if(!confirm('Czy na pewno usunąć wszystkie Twoje lokalne wiersze, szkice, zapisane teksty i profil?'))return;state={poems:[],saved:[],bottles:[],profile:{}};persist();localStorage.removeItem(KEY+'-draft');renderHome();renderLibrary();renderSaved();renderProfile();toast('Lokalne dane zostały usunięte')}
-renderHome();renderLibrary();renderSaved();renderProfile();renderBottleSelect();
+renderHome();renderLibrary();renderSaved();renderProfile();
 try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getElementById('title').value=d.title||'';document.getElementById('body').value=d.body||''}}catch(e){}
  </script>
 
@@ -671,6 +671,8 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Uruchom dopiero po utworzeniu klienta Supabase.
+renderBottleSelect();
 
 // Pokój Szeptów — odczyt i wysyłanie przez publiczne polityki RLS.
 const pokojLog=document.getElementById('szept-chat-log');
@@ -717,7 +719,7 @@ pokojForm.addEventListener('submit',async e=>{
   document.getElementById('szept-chat-message').value='';
   pokojStatus.textContent='Szept wysłany!';
   pokojLastSignature='';await odswiezPokojSzeptow();
- }catch(err){pokojStatus.textContent='Nie udało się wysłać szeptu. Spróbuj ponownie.';console.error('Wysyłanie szeptu:',err);}
+ }catch(err){pokojStatus.textContent='Nie udało się wysłać szeptu: '+(err?.message||'nieznany błąd')+(err?.code?' (kod: '+err.code+')':'');console.error('Wysyłanie szeptu:',err);}
  finally{send.disabled=false;}
 });
 setInterval(odswiezPokojSzeptow,4000);
