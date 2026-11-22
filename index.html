@@ -361,6 +361,14 @@ nav a.blog-link{display:inline-flex;align-items:center;text-decoration:none;colo
 nav a.blog-link:hover{background:#e5c98a18;color:#f5e5bc}
 a.blog-hero-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--gold);border-color:#e5c98a66}
 a.blog-hero-link:hover{background:#e5c98a16}
+
+/* Pokój Szeptów — czat publiczny */
+.szept-chat{max-width:790px;margin:0 auto;background:linear-gradient(145deg,#13213b,#0b1429);border:1px solid #e5c98a55;border-radius:22px;padding:22px;box-shadow:var(--shadow)}
+.szept-chat-log{height:min(55vh,480px);min-height:270px;overflow-y:auto;background:#071122;border:1px solid #35415d;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.szept-chat-item{background:#ffffff0b;border:1px solid #ffffff12;border-radius:12px;padding:10px 13px;overflow-wrap:anywhere}
+.szept-chat-meta{color:var(--gold);font-size:12px;margin-bottom:5px}.szept-chat-msg{white-space:pre-wrap;color:#f4f0e7}
+.szept-chat-form{margin-top:16px}.szept-chat-form textarea{min-height:95px}.szept-chat-form .row{margin-top:12px}.szept-chat-form .row button{flex:0 0 auto}
+.szept-chat-status{color:var(--muted);font-size:13px;min-height:20px;margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -375,11 +383,25 @@ a.blog-hero-link:hover{background:#e5c98a16}
    <button class="navbtn" data-page="saved">Biblioteczka</button>
    <button class="navbtn" data-page="profile">Mój profil</button>
    <a class="navbtn blog-link" href="./miedzy-slowami.html">Między słowami</a>
+   <button class="navbtn" data-page="pokoj-szeptow">Pokój Szeptów</button>
    <button class="navbtn" data-page="moderation" id="moderationBtn" style="display:none">Moderacja</button>
   </nav>
  </div>
 </header>
 <main class="shell">
+ <section id="pokoj-szeptow" class="page" aria-labelledby="pokoj-title">
+  <div class="section-head"><div><div class="eyebrow">SZEPT • rozmowy</div><h2 id="pokoj-title">☾ Pokój Szeptów</h2><p class="sub">Przystań dla słów. Rozmawiaj bez zakładania konta, pod wybranym pseudonimem.</p></div></div>
+  <div class="szept-chat">
+   <div id="szept-chat-log" class="szept-chat-log" role="log" aria-live="polite"><p class="sub">Ładowanie rozmowy…</p></div>
+   <p id="szept-chat-status" class="szept-chat-status" role="status"></p>
+   <form id="szept-chat-form" class="szept-chat-form">
+    <div class="field"><label for="szept-chat-name">Twój pseudonim</label><input id="szept-chat-name" maxlength="40" autocomplete="nickname" required placeholder="Jak mamy Cię nazywać?"></div>
+    <div class="field"><label for="szept-chat-message">Twoja wiadomość</label><textarea id="szept-chat-message" maxlength="1000" required placeholder="Napisz kilka słów…"></textarea></div>
+    <div class="row"><span class="hint">Wiadomości są publiczne. Nie podawaj danych osobowych.</span><button id="szept-chat-send" class="primary" type="submit">Wyślij szept</button></div>
+   </form>
+  </div>
+ </section>
+
  <section id="home" class="page active">
   <div class="sea-banner" role="img" aria-label="Morze z butelką i złotym logo SZEPT">
    <div class="sea-caption">Przystań dla słów i emocji</div>
@@ -487,7 +509,7 @@ function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function allPoems(){return [...sharedPoems,...state.poems.filter(p=>!['Kiedy miasto zasypia','Małe światło','Mapa twoich dłoni'].includes((p.title||'').trim())).map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile'){renderProfile();loadMyPublishedPoems();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile'){renderProfile();loadMyPublishedPoems();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function poemCard(p){
  const own=!!p.local, saved=state.saved.includes(p.id);
@@ -649,6 +671,57 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Pokój Szeptów — odczyt i wysyłanie przez publiczne polityki RLS.
+const pokojLog=document.getElementById('szept-chat-log');
+const pokojStatus=document.getElementById('szept-chat-status');
+const pokojForm=document.getElementById('szept-chat-form');
+let pokojBusy=false, pokojLastSignature='';
+try{document.getElementById('szept-chat-name').value=localStorage.getItem('szept_pseudonim')||'';}catch(e){}
+function pokojData(d){try{return new Date(d).toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+async function odswiezPokojSzeptow(){
+ if(pokojBusy || !document.getElementById('pokoj-szeptow').classList.contains('active'))return;
+ pokojBusy=true;
+ try{
+  const {data,error}=await db.from('pokoj_szeptow').select('id,pseudonim,wiadomosc,utworzono').order('utworzono',{ascending:false}).limit(100);
+  if(error)throw error;
+  const messages=(data||[]).reverse();
+  const signature=messages.map(m=>m.id).join('|');
+  if(signature!==pokojLastSignature){
+   const atBottom=pokojLog.scrollHeight-pokojLog.scrollTop-pokojLog.clientHeight<85;
+   pokojLog.replaceChildren();
+   if(!messages.length){const p=document.createElement('p');p.className='sub';p.textContent='Jeszcze cisza… Napisz pierwszy szept.';pokojLog.append(p);}
+   for(const m of messages){
+    const item=document.createElement('div');item.className='szept-chat-item';
+    const meta=document.createElement('div');meta.className='szept-chat-meta';meta.textContent=(m.pseudonim||'Anonim')+' · '+pokojData(m.utworzono);
+    const body=document.createElement('div');body.className='szept-chat-msg';body.textContent=m.wiadomosc||'';
+    item.append(meta,body);pokojLog.append(item);
+   }
+   if(atBottom||!pokojLastSignature)pokojLog.scrollTop=pokojLog.scrollHeight;
+   pokojLastSignature=signature;
+  }
+  pokojStatus.textContent='Rozmowa odświeża się automatycznie.';
+ }catch(e){pokojStatus.textContent='Nie udało się pobrać wiadomości. Sprawdź dostęp do tabeli pokoj_szeptow w Supabase.';console.error('Pokój Szeptów:',e);}
+ finally{pokojBusy=false;}
+}
+pokojForm.addEventListener('submit',async e=>{
+ e.preventDefault();
+ const name=document.getElementById('szept-chat-name').value.trim();
+ const message=document.getElementById('szept-chat-message').value.trim();
+ if(!name||!message||name.length>40||message.length>1000){pokojStatus.textContent='Podaj pseudonim (do 40 znaków) i wiadomość (do 1000 znaków).';return;}
+ const send=document.getElementById('szept-chat-send');send.disabled=true;pokojStatus.textContent='Wysyłanie…';
+ try{
+  const {error}=await db.from('pokoj_szeptow').insert({pseudonim:name,wiadomosc:message});
+  if(error)throw error;
+  try{localStorage.setItem('szept_pseudonim',name);}catch(e){}
+  document.getElementById('szept-chat-message').value='';
+  pokojStatus.textContent='Szept wysłany!';
+  pokojLastSignature='';await odswiezPokojSzeptow();
+ }catch(err){pokojStatus.textContent='Nie udało się wysłać szeptu. Spróbuj ponownie.';console.error('Wysyłanie szeptu:',err);}
+ finally{send.disabled=false;}
+});
+setInterval(odswiezPokojSzeptow,4000);
+
 async function Wiersz_opublikowany(title, content, emotion, signature=null) {
   let {data:{session},error:sessionError}=await db.auth.getSession();
   if(sessionError)throw sessionError;
