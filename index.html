@@ -355,6 +355,12 @@ footer { background:rgba(5,14,30,.38); }
 #receivedBottles .card > button{margin-top:14px}
 #receivedBottles .poem-card > button{position:relative;z-index:2;color:#523821;background:#efdbba;border:1px solid #b79263}
 #sentBottles .card{overflow-wrap:anywhere}
+
+/* Łącze do bloga w nawigacji i na stronie głównej. */
+nav a.blog-link{display:inline-flex;align-items:center;text-decoration:none;color:var(--gold);border-color:#e5c98a66;white-space:nowrap}
+nav a.blog-link:hover{background:#e5c98a18;color:#f5e5bc}
+a.blog-hero-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--gold);border-color:#e5c98a66}
+a.blog-hero-link:hover{background:#e5c98a16}
 </style>
 </head>
 <body>
@@ -368,6 +374,7 @@ footer { background:rgba(5,14,30,.38); }
    <button class="navbtn" data-page="bottle">Butelka</button>
    <button class="navbtn" data-page="saved">Biblioteczka</button>
    <button class="navbtn" data-page="profile">Mój profil</button>
+   <a class="navbtn blog-link" href="./miedzy-slowami.html">Między słowami</a>
    <button class="navbtn" data-page="moderation" id="moderationBtn" style="display:none">Moderacja</button>
   </nav>
  </div>
@@ -380,7 +387,7 @@ footer { background:rgba(5,14,30,.38); }
   <div class="hero">
    <h1>Nie wszystko trzeba<br><em>powiedzieć na głos.</em></h1>
    <p class="lead">Czasami wystarczy napisać wiersz, żeby ktoś po drugiej stronie świata poczuł to samo. Czytaj, pisz i wysyłaj swoje słowa w nieznane.</p>
-   <div class="hero-actions"><button class="primary" onclick="showPage('library')">Odkryj poezję</button><button class="ghost" onclick="showPage('write')">Napisz swój wiersz</button></div>
+   <div class="hero-actions"><button class="primary" onclick="showPage('library')">Odkryj poezję</button><button class="ghost" onclick="showPage('write')">Napisz swój wiersz</button><a class="ghost blog-hero-link" href="./miedzy-slowami.html">✦ Między słowami — blog</a></div>
   </div>
   <div class="section">
    <div class="section-head"><div><div class="eyebrow">Słowa, które zostają</div><h2>Na dobry początek</h2><p class="sub">Kilka wierszy czeka, aż je odkryjesz.</p></div><button class="soft" onclick="showPage('library')">Cała czytelnia →</button></div>
