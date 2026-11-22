@@ -231,7 +231,8 @@ Nie wysyła go automatycznie do redakcji ani nie publikuje.
 <section id="ready" hidden>
 <h2>Twój tekst jest gotowy</h2>
 <textarea id="result" readonly></textarea>
-<button type="button" id="copy">Kopiuj tekst</button>
+<button type="button" <button type="button" id="copy">Kopiuj tekst</button>Kopiuj tekst</button>
+ <button type="button" id="send">Wyślij historię do SZEPTU ✉️</button>
 <p><small>
 Skopiuj tekst i prześlij go redakcji SZEPTU
 uzgodnionym kanałem. Każdy wpis wymaga zatwierdzenia.
@@ -276,6 +277,19 @@ document.getElementById('copy').addEventListener('click',async function(){
   result.select();
   this.textContent='Zaznaczono tekst — skopiuj go';
  }
+});
+ document.getElementById('send').addEventListener('click', function() {
+  const body = document.getElementById('result').value;
+
+  if (!body.trim()) {
+    alert('Najpierw przygotuj swoją historię.');
+    return;
+  }
+
+  window.location.href =
+    'mailto:bfly07@gmail.com?subject=' +
+    encodeURIComponent('Historia czytelnika — SZEPT') +
+    '&body=' + encodeURIComponent(body);
 });
 </script>
 
