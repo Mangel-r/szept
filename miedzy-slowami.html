@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Między słowami — SZEPT</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;
+ color:#f5ead8;
+ font-family:'Cormorant Garamond',Georgia,serif;
+ font-size:22px;
+ line-height:1.6;
+ background:
+ radial-gradient(ellipse at 50% 10%,#52607566,transparent 32%),
+ linear-gradient(#081321,#142b3c 60%,#07111d);
+ min-height:100vh;
+}
+body:before{
+ content:"";
+ position:fixed;
+ inset:0;
+ pointer-events:none;
+ background:repeating-linear-gradient(
+  175deg,transparent 0 25px,#ffffff05 26px 27px
+ );
+ opacity:.45;
+}
+header{
+ text-align:center;
+ padding:65px 20px 75px;
+ position:relative;
+ overflow:hidden;
+}
+.moon{
+ width:105px;height:105px;
+ border-radius:50%;
+ margin:auto;
+ background:#f6e7bc;
+ box-shadow:0 0 45px #e8d49a77,0 0 100px #e8d49a33;
+}
+.feather{
+ font-size:90px;
+ line-height:1.2;
+ filter:drop-shadow(0 0 12px #d9b77877);
+ transform:rotate(-25deg);
+ display:inline-block;
+ margin-top:25px;
+}
+h1{
+ font-family:'Great Vibes',cursive;
+ font-weight:400;
+ font-size:clamp(62px,11vw,110px);
+ line-height:1.2;
+ color:#edca82;
+ margin:0;
+ text-shadow:0 2px 18px #d5a34b55;
+}
+.tagline{font-style:italic;color:#e4d2b4}
+nav a,.back{
+ color:#f0cd8b;
+ text-decoration:none;
+ border-bottom:1px solid #d7b775;
+}
+main{max-width:880px;margin:auto;padding:20px}
+section,article{
+ position:relative;
+ background:#071320cc;
+ border:1px solid #cba86677;
+ border-radius:18px;
+ padding:30px;
+ margin:28px 0;
+ box-shadow:0 12px 35px #0005;
+}
+h2{
+ color:#eac785;
+ font-weight:600;
+ font-size:38px;
+ margin:0 0 12px;
+}
+.category{
+ font-size:15px;
+ letter-spacing:3px;
+ text-transform:uppercase;
+ color:#d6b677;
+}
+blockquote{
+ border-left:2px solid #d6b677;
+ padding-left:20px;
+ margin:20px 0;
+ font-style:italic;
+}
+label{display:block;margin-top:16px}
+input,select,textarea{
+ display:block;
+ width:100%;
+ padding:12px;
+ margin-top:5px;
+ border:1px solid #bfa06a;
+ border-radius:8px;
+ background:#102336;
+ color:#fff5e5;
+ font:20px Georgia,serif;
+}
+textarea{min-height:200px;resize:vertical}
+button{
+ background:linear-gradient(#f0d59d,#c69c52);
+ color:#172332;
+ border:0;
+ border-radius:9px;
+ padding:13px 25px;
+ font-size:18px;
+ font-weight:bold;
+ cursor:pointer;
+ margin-top:20px;
+}
+button:hover{filter:brightness(1.1)}
+small{font-size:16px;color:#d6c6ae}
+footer{
+ text-align:center;
+ padding:50px 15px;
+ color:#d6bc91;
+}
+@media(max-width:600px){
+ section,article{padding:22px}
+ header{padding-top:45px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="moon"></div>
+<div class="feather" aria-label="Złote pióro">🪶</div>
+<p class="category">SZEPT przedstawia</p>
+<h1>Między słowami</h1>
+<p class="tagline">Myśli zapisane piórem duszy…</p>
+<p>Felietony • Refleksje • Historie • Listy</p>
+<nav><a href="index.html">← Wróć do SZEPTU</a></nav>
+</header>
+
+<main>
+
+<section>
+<p class="category">Witaj w naszym świecie</p>
+<h2>Nie wszystko mieści się w wierszu</h2>
+<p>
+Są myśli, które potrzebują więcej miejsca.
+Historie, które domagają się opowiedzenia.
+Pytania, na które nie ma prostych odpowiedzi.
+</p>
+<p>
+Tutaj nie musisz pisać pięknie.
+Wystarczy, że napiszesz prawdziwie.
+</p>
+</section>
+
+<h2>✦ Zapisane między słowami</h2>
+
+<article>
+<p class="category">Felieton · SZEPT</p>
+<h2>Nie wszystko musi mieć sens</h2>
+<p>
+Żyjemy w czasach, w których nawet odpoczynek
+powinien być produktywny.
+Cisza ma nas rozwijać, spacer poprawiać kondycję,
+a każda porażka koniecznie czegoś nauczyć.
+</p>
+<p>
+A może czasem porażka jest po prostu porażką?
+Deszcz tylko deszczem?
+A człowiek ma prawo przeżyć zwyczajny wtorek,
+nie stając się lepszą wersją siebie?
+</p>
+<blockquote>
+Nie każda chwila musi prowadzić do celu.
+Niektóre wystarczy przeżyć.
+</blockquote>
+<p>— SZEPT</p>
+</article>
+
+<section>
+<p class="category">Twój głos ma znaczenie</p>
+<h2>🪶 Zostaw swoją historię</h2>
+<p>
+Napisz felieton, refleksję, list lub opowieść.
+Podpisz się pseudonimem albo pozostań anonimowo.
+</p>
+
+<form id="storyForm">
+<label>Tytuł
+<input id="title" required maxlength="120"
+placeholder="Tytuł Twojego tekstu">
+</label>
+
+<label>Autor
+<input id="author" maxlength="60"
+placeholder="Pseudonim lub pozostaw puste">
+</label>
+
+<label>Rodzaj tekstu
+<select id="category">
+<option>Myśli i refleksje</option>
+<option>Felieton</option>
+<option>Historia z życia</option>
+<option>List bez adresata</option>
+<option>Inne</option>
+</select>
+</label>
+
+<label>Twój tekst
+<textarea id="content" required
+placeholder="Tutaj zaczyna się Twoja historia..."></textarea>
+</label>
+
+<button type="submit">Przygotuj mój tekst</button>
+</form>
+
+<small>
+Na tym etapie formularz przygotowuje tekst do skopiowania.
+Nie wysyła go automatycznie do redakcji ani nie publikuje.
+</small>
+</section>
+
+<section id="ready" hidden>
+<h2>Twój tekst jest gotowy</h2>
+<textarea id="result" readonly></textarea>
+<button type="button" id="copy">Kopiuj tekst</button>
+<p><small>
+Skopiuj tekst i prześlij go redakcji SZEPTU
+uzgodnionym kanałem. Każdy wpis wymaga zatwierdzenia.
+</small></p>
+</section>
+
+</main>
+
+<footer>
+<p>🪶 SZEPT — Twoje słowa. Czyjeś emocje.</p>
+<p>Czytaj. Pisz. Poczuj.</p>
+<a class="back" href="index.html">Powrót do strony głównej</a>
+</footer>
+
+<script>
+const form=document.getElementById('storyForm');
+const ready=document.getElementById('ready');
+const result=document.getElementById('result');
+
+form.addEventListener('submit',function(e){
+ e.preventDefault();
+ const title=document.getElementById('title').value.trim();
+ const author=document.getElementById('author').value.trim()||'Anonim';
+ const category=document.getElementById('category').value;
+ const content=document.getElementById('content').value.trim();
+ if(!title||!content)return;
+
+ result.value=
+ 'Tytuł: '+title+'\n'+
+ 'Autor: '+author+'\n'+
+ 'Kategoria: '+category+'\n\n'+content;
+
+ ready.hidden=false;
+ ready.scrollIntoView({behavior:'smooth'});
+});
+
+document.getElementById('copy').addEventListener('click',async function(){
+ try{
+  await navigator.clipboard.writeText(result.value);
+  this.textContent='Skopiowano!';
+ }catch(e){
+  result.select();
+  this.textContent='Zaznaczono tekst — skopiuj go';
+ }
+});
+</script>
+
+</body>
+</html>
