@@ -44,14 +44,10 @@ header{
  background:#f6e7bc;
  box-shadow:0 0 45px #e8d49a77,0 0 100px #e8d49a33;
 }
-.feather{
- font-size:90px;
- line-height:1.2;
- filter:drop-shadow(0 0 12px #d9b77877);
- transform:rotate(-25deg);
- display:inline-block;
- margin-top:25px;
-}
+.feather{width:190px;max-width:46vw;margin:12px auto 0;animation:floatFeather 5s ease-in-out infinite;filter:drop-shadow(0 0 18px #e8bd7180)}
+.feather-art{display:block;width:100%;height:auto}
+@keyframes floatFeather{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-14px) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){.feather{animation:none}}
 h1{
  font-family:'Great Vibes',cursive;
  font-weight:400;
@@ -68,6 +64,7 @@ nav a,.back{
  border-bottom:1px solid #d7b775;
 }
 main{max-width:880px;margin:auto;padding:20px}
+[hidden]{display:none!important}
 section,article{
  position:relative;
  background:#071320cc;
@@ -137,7 +134,13 @@ footer{
 
 <header>
 <div class="moon"></div>
-<div class="feather" aria-label="Złote pióro">🪶</div>
+<div class="feather"><svg class="feather-art" viewBox="0 0 210 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Złote pióro">
+<defs><linearGradient id="goldFeather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff4c9"/><stop offset=".48" stop-color="#dfb45e"/><stop offset="1" stop-color="#9c6b2c"/></linearGradient></defs>
+<path d="M32 263 C80 210 60 128 124 53 C145 28 176 17 191 12 C186 63 173 126 139 166 C105 207 75 219 32 263Z" fill="url(#goldFeather)" opacity=".94"/>
+<path d="M32 263 C91 194 124 117 191 12" fill="none" stroke="#fff3c5" stroke-width="3" stroke-linecap="round"/>
+<g stroke="#8f632b" stroke-width="1.4" opacity=".55"><path d="M70 212l-19-47 M91 180l-22-56 M113 145l-18-62 M137 110l-12-56 M158 76l-6-41 M91 180l47 4 M113 145l48 4 M137 110l39 1 M158 76l24-3"/></g>
+<path d="M32 263L18 285" stroke="#e9c47d" stroke-width="4" stroke-linecap="round"/>
+</svg></div>
 <p class="category">SZEPT przedstawia</p>
 <h1>Między słowami</h1>
 <p class="tagline">Myśli zapisane piórem duszy…</p>
@@ -187,7 +190,7 @@ Niektóre wystarczy przeżyć.
 
 <section>
 <p class="category">Twój głos ma znaczenie</p>
-<h2>🪶 Zostaw swoją historię</h2>
+<h2>✦ Zostaw swoją historię</h2>
 <p>
 Napisz felieton, refleksję, list lub opowieść.
 Podpisz się pseudonimem albo pozostań anonimowo.
@@ -231,8 +234,8 @@ Nie wysyła go automatycznie do redakcji ani nie publikuje.
 <section id="ready" hidden>
 <h2>Twój tekst jest gotowy</h2>
 <textarea id="result" readonly></textarea>
-<button type="button" <button type="button" id="copy">Kopiuj tekst</button>Kopiuj tekst</button>
- <button type="button" id="send">Wyślij historię do SZEPTU ✉️</button>
+<button type="button" id="copy">Kopiuj tekst</button>
+ <button type="button" id="send">Wyślij historię do SZEPTU</button>
 <p><small>
 Skopiuj tekst i prześlij go redakcji SZEPTU
 uzgodnionym kanałem. Każdy wpis wymaga zatwierdzenia.
@@ -242,7 +245,7 @@ uzgodnionym kanałem. Każdy wpis wymaga zatwierdzenia.
 </main>
 
 <footer>
-<p>🪶 SZEPT — Twoje słowa. Czyjeś emocje.</p>
+<p>✦ SZEPT — Twoje słowa. Czyjeś emocje.</p>
 <p>Czytaj. Pisz. Poczuj.</p>
 <a class="back" href="index.html">Powrót do strony głównej</a>
 </footer>
