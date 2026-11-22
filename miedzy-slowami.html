@@ -13,7 +13,7 @@ function message(text,error=false){status.textContent=text;status.className='sta
 function elt(tag,cls,content){const x=document.createElement(tag);if(cls)x.className=cls;if(content!==undefined)x.textContent=content;return x;}
 async function load(){
  try{
- const response=await fetch(endpoint+'?select=*&order=created_at.desc&limit=100',{headers});
+ const response=await fetch(endpoint+'?select=*&limit=100',{headers});
  if(!response.ok)throw Error('HTTP '+response.status);
  const data=await response.json();
  for(const holder of document.querySelectorAll('.entries')){
