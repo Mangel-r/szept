@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#071526">
+<title>Między słowami — SZEPT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#efd099;--gold-dark:#ba8e4d;--ink:#071526;--cream:#f7ecdc}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;color:var(--cream);font:clamp(19px,2.3vw,22px)/1.65 'Cormorant Garamond',Georgia,serif;background:radial-gradient(ellipse at 50% 19%,#145b96 0%,#102e50 30%,#081526 65%,#050c18 100%);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;background-image:radial-gradient(#fff8 0.65px,transparent 1px);background-size:42px 42px}
+a{color:var(--gold)}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #f8d891;outline-offset:3px}
+.hero{position:relative;min-height:670px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:74px 20px 95px;isolation:isolate}
+.hero::after{content:"";position:absolute;inset:auto 0 0;height:260px;background:linear-gradient(transparent,#081526);z-index:-1}
+.moon{position:absolute;top:65px;left:calc(50% - 43px);width:86px;height:86px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#fffbed,#f4dfa7 65%,#d9b778);box-shadow:0 0 35px #f4d68e88,0 0 100px #d5b57355;animation:moonGlow 5s ease-in-out infinite alternate}
+.stars{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 22%,#fff9 1px,transparent 2px),radial-gradient(circle at 82% 28%,#fff8 1px,transparent 2px),radial-gradient(circle at 70% 68%,#fff7 1px,transparent 2px),radial-gradient(circle at 30% 70%,#fff6 1px,transparent 2px)}
+.feather-art{position:relative;width:190px;height:210px;margin:90px auto 2px;filter:drop-shadow(0 0 16px #d6ac6070);animation:floatFeather 6s ease-in-out infinite;transform-origin:55% 80%}
+.feather-art svg{display:block;width:100%;height:100%;overflow:visible}
+.eyebrow,.category{font:600 13px/1.5 'Cormorant Garamond',Georgia,serif;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+.hero .eyebrow{margin:0 0 12px}h1{font:400 clamp(62px,10vw,112px)/1.14 'Great Vibes','Brush Script MT',cursive;color:#f4d38b;text-shadow:0 2px 20px #d4a54b55;margin:0 0 10px;max-width:100%;overflow-wrap:normal}
+.tagline{font-style:italic;color:#f3dfbf;margin:8px 0}.hero .types{margin:5px 0 16px}.back{display:inline-block;text-decoration:none;border-bottom:1px solid #d8b779;font-weight:700}.back:hover{color:white}
+.hero .scroll-cue{position:absolute;bottom:30px;color:#ddc39a;font-size:15px;letter-spacing:.12em;text-decoration:none}
+main{width:min(900px,calc(100% - 32px));margin:0 auto;padding:10px 0 50px}section,article{background:linear-gradient(135deg,#0b1e33ed,#081526ed);border:1px solid #c8a46980;border-radius:20px;padding:clamp(22px,4vw,38px);margin:26px 0;box-shadow:0 14px 40px #0006;position:relative}section::before,article::before{content:"✦";position:absolute;right:24px;top:16px;color:#caa66c88;font-size:18px}h2{font-weight:600;color:var(--gold);font-size:clamp(31px,5vw,43px);line-height:1.2;margin:7px 0 15px}p{margin:12px 0}blockquote{border-left:2px solid var(--gold-dark);padding:6px 0 6px 20px;margin:22px 0;font-style:italic;color:#f7e4c4}.section-title{text-align:center;margin:58px 0 22px}
+label{display:block;margin:16px 0 0;font-weight:600}input,select,textarea{display:block;width:100%;padding:13px 14px;margin-top:6px;border:1px solid #c3a16c;border-radius:9px;background:#10283e;color:#fff6e6;font:20px Georgia,serif}textarea{min-height:190px;resize:vertical}button{background:linear-gradient(120deg,#ffe5ad,#c79a52);color:#182438;border:0;border-radius:9px;padding:13px 23px;font-size:17px;font-weight:700;cursor:pointer;margin:18px 10px 5px 0}button:hover{filter:brightness(1.12)}small{display:block;font-size:16px;color:#dfccb0;margin-top:13px}#ready[hidden]{display:none}footer{text-align:center;padding:30px 20px 60px;color:#dfc69b}.footer-feather{width:44px;height:44px;vertical-align:middle;margin-right:5px} .status{min-height:1.5em;color:#f5dba3}
+@keyframes floatFeather{0%,100%{transform:translateY(0) rotate(-9deg)}50%{transform:translateY(-18px) rotate(6deg)}}@keyframes moonGlow{from{box-shadow:0 0 35px #f4d68e88,0 0 100px #d5b57355}to{box-shadow:0 0 50px #f4d68eaa,0 0 120px #d5b57377}}
+@media(max-width:600px){.hero{min-height:620px;padding:70px 12px 75px}.moon{top:43px;width:72px;height:72px;left:calc(50% - 36px)}.feather-art{width:145px;height:160px;margin-top:80px}.hero .types{font-size:18px}h1{font-size:clamp(54px,13vw,77px)}section,article{border-radius:14px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<!-- Grafika pióra jest osadzona w pliku: nie wymaga dodatkowego obrazka ani emoji. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="goldFeather" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2c5"/><stop offset=".42" stop-color="#e9c477"/><stop offset="1" stop-color="#a56b2e"/></linearGradient><symbol id="featherSymbol" viewBox="0 0 180 230"><path d="M28 211C52 179 65 141 80 106 100 57 135 23 167 13c-4 54-19 111-60 143-22 17-47 22-68 32" fill="url(#goldFeather)" stroke="#ffe6aa" stroke-width="2.5"/><path d="M28 211C64 147 112 79 166 15" fill="none" stroke="#fff4cf" stroke-width="4" stroke-linecap="round"/><g stroke="#8f602e" stroke-width="1.8" opacity=".62"><path d="M63 152l-12-29M75 127l-13-32M87 105L75 74M99 84L91 56M111 65l-7-25M123 49l-5-23M79 153l40 4M95 132l39 5M112 109l36 3M128 85l26 3M141 61l17 2"/></g><path d="M28 211l-14 17" stroke="#fbe2aa" stroke-width="4" stroke-linecap="round"/></symbol></defs></svg>
+<header class="hero">
+<div class="stars" aria-hidden="true"></div><div class="moon" aria-hidden="true"></div>
+<div class="feather-art" role="img" aria-label="Duże, złote pióro unoszące się w świetle księżyca"><svg viewBox="0 0 180 230" aria-hidden="true"><use href="#featherSymbol"/></svg></div>
+<p class="eyebrow">SZEPT przedstawia</p>
+<h1>Między słowami</h1>
+<p class="tagline">Myśli zapisane piórem duszy…</p>
+<p class="types">Felietony • Refleksje • Historie • Listy</p>
+<nav aria-label="Nawigacja"><a class="back" href="index.html">← Wróć do SZEPTU</a></nav>
+<a class="scroll-cue" href="#witaj">ODKRYJ HISTORIE ↓</a>
+</header>
+<main>
+<section id="witaj"><p class="category">Witaj w naszym świecie</p><h2>Nie wszystko mieści się w wierszu</h2><p>Są myśli, które potrzebują więcej miejsca. Historie, które domagają się opowiedzenia. Pytania, na które nie ma prostych odpowiedzi.</p><p>Tutaj nie musisz pisać pięknie. Wystarczy, że napiszesz prawdziwie.</p></section>
+<h2 class="section-title">✦ Zapisane między słowami</h2>
+<article><p class="category">Felieton · SZEPT</p><h2>Nie wszystko musi mieć sens</h2><p>Żyjemy w czasach, w których nawet odpoczynek powinien być produktywny. Cisza ma nas rozwijać, spacer poprawiać kondycję, a każda porażka koniecznie czegoś nauczyć.</p><p>A może czasem porażka jest po prostu porażką? Deszcz tylko deszczem? A człowiek ma prawo przeżyć zwyczajny wtorek, nie stając się lepszą wersją siebie?</p><blockquote>Nie każda chwila musi prowadzić do celu. Niektóre wystarczy przeżyć.</blockquote><p>— SZEPT</p></article>
+<section><p class="category">Twój głos ma znaczenie</p><h2>Zostaw swoją historię</h2><p>Napisz felieton, refleksję, list lub opowieść. Podpisz się pseudonimem albo pozostań anonimowo.</p>
+<form id="storyForm"><label for="storyTitle">Tytuł</label><input id="storyTitle" required maxlength="120" placeholder="Tytuł Twojego tekstu"><label for="author">Autor</label><input id="author" maxlength="60" placeholder="Pseudonim lub pozostaw puste"><label for="category">Rodzaj tekstu</label><select id="category"><option>Myśli i refleksje</option><option>Felieton</option><option>Historia z życia</option><option>List bez adresata</option><option>Inne</option></select><label for="content">Twój tekst</label><textarea id="content" required placeholder="Tutaj zaczyna się Twoja historia..."></textarea><button type="submit">Przygotuj mój tekst</button></form>
+<small>Formularz przygotowuje tekst do skopiowania. Nie wysyła go automatycznie do redakcji ani nie publikuje.</small></section>
+<section id="ready" hidden><h2>Twój tekst jest gotowy</h2><textarea id="result" readonly aria-label="Przygotowany tekst"></textarea><button type="button" id="copy">Kopiuj tekst</button><button type="button" id="send">Wyślij historię do SZEPTU ✉</button><p class="status" id="status" role="status"></p><small>Możesz skopiować tekst lub otworzyć program pocztowy, aby przesłać go redakcji. Każdy wpis wymaga zatwierdzenia.</small></section>
+</main>
+<footer><p><svg class="footer-feather" viewBox="0 0 180 230" aria-hidden="true"><use href="#featherSymbol"/></svg> SZEPT — Twoje słowa. Czyjeś emocje.</p><p>Czytaj. Pisz. Poczuj.</p><a class="back" href="index.html">Powrót do strony głównej</a></footer>
+<script>
+'use strict';
+const form=document.getElementById('storyForm');
+const ready=document.getElementById('ready');
+const result=document.getElementById('result');
+const status=document.getElementById('status');
+form.addEventListener('submit',event=>{
+ event.preventDefault();
+ const title=document.getElementById('storyTitle').value.trim();
+ const author=document.getElementById('author').value.trim()||'Anonim';
+ const category=document.getElementById('category').value;
+ const content=document.getElementById('content').value.trim();
+ if(!title||!content){return;}
+ result.value=`Tytuł: ${title}\nAutor: ${author}\nKategoria: ${category}\n\n${content}`;
+ ready.hidden=false;status.textContent='';
+ ready.scrollIntoView({behavior:'smooth',block:'start'});
+});
+document.getElementById('copy').addEventListener('click',async function(){
+ try{
+  if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+  await navigator.clipboard.writeText(result.value);
+  status.textContent='Tekst skopiowany!';this.textContent='Skopiowano!';
+ }catch(error){result.focus();result.select();status.textContent='Tekst zaznaczony. Naciśnij Ctrl + C, aby go skopiować.';}
+});
+document.getElementById('send').addEventListener('click',()=>{
+ if(!result.value.trim()){status.textContent='Najpierw przygotuj swoją historię.';return;}
+ const subject=encodeURIComponent('Historia czytelnika — SZEPT');
+ const body=encodeURIComponent(result.value);
+ window.location.href=`mailto:bfly07@gmail.com?subject=${subject}&body=${body}`;
+});
+</script>
+</body>
+</html>
