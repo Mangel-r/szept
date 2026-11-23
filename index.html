@@ -384,11 +384,29 @@ a.blog-hero-link:hover{background:#e5c98a16}
    <button class="navbtn" data-page="profile">Mój profil</button>
    <a class="navbtn blog-link" href="./miedzy-slowami.html">Między słowami</a>
    <button class="navbtn" data-page="pokoj-szeptow">Pokój Szeptów</button>
+   <button class="navbtn" data-page="muzyczny-pokoj">🎶 Muzyczny Pokój</button>
    <button class="navbtn" data-page="moderation" id="moderationBtn" style="display:none">Moderacja</button>
   </nav>
  </div>
 </header>
 <main class="shell">
+ 
+ <section id="muzyczny-pokoj" class="page" aria-labelledby="muzyka-title">
+  <div class="section-head"><div><div class="eyebrow">SZEPT • muzyka i emocje</div><h2 id="muzyka-title">🎶 Muzyczny Pokój</h2><p class="sub">Każda melodia niesie jakąś historię. Zostaw swoją.</p></div></div>
+  <div class="card form-card" style="margin:0 0 24px;max-width:100%">
+   <h3>Podziel się muzyką ♡</h3>
+   <form id="muzyka-form">
+    <div class="row"><div class="field"><label for="muzyka-autor">Twój pseudonim</label><input id="muzyka-autor" maxlength="60" required placeholder="Jak mamy Cię podpisać?"></div><div class="field"><label for="muzyka-tytul">Tytuł utworu</label><input id="muzyka-tytul" maxlength="150" required></div></div>
+    <div class="row"><div class="field"><label for="muzyka-wykonawca">Wykonawca (opcjonalnie)</label><input id="muzyka-wykonawca" maxlength="120"></div><div class="field"><label for="muzyka-link">Link do YouTube lub Spotify</label><input id="muzyka-link" type="url" maxlength="800" required placeholder="https://..."></div></div>
+    <div class="field"><label for="muzyka-tekst">Wiersz, dedykacja, wspomnienie lub kilka własnych słów (opcjonalnie)</label><textarea id="muzyka-tekst" maxlength="1800" style="min-height:120px" placeholder="Co dla Ciebie znaczy ta melodia?"></textarea></div>
+    <button class="primary" id="muzyka-submit" type="submit">🎵 Dodaj utwór</button>
+    <p class="hint">Utwory pojawiają się od razu. Dodawaj tylko linki do YouTube lub Spotify; nie wklejaj cudzych tekstów piosenek.</p>
+   </form>
+  </div>
+  <p id="muzyka-status" class="sub" role="status">Ładowanie melodii…</p>
+  <div id="muzyka-lista" class="grid" style="margin-top:16px"></div>
+ </section>
+
  <section id="pokoj-szeptow" class="page" aria-labelledby="pokoj-title">
   <div class="section-head"><div><div class="eyebrow">SZEPT • rozmowy</div><h2 id="pokoj-title">☾ Pokój Szeptów</h2><p class="sub">Przystań dla słów. Rozmawiaj bez zakładania konta, pod wybranym pseudonimem.</p></div></div>
   <div class="szept-chat">
@@ -509,7 +527,7 @@ function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function allPoems(){return [...sharedPoems,...state.poems.filter(p=>!['Kiedy miasto zasypia','Małe światło','Mapa twoich dłoni'].includes((p.title||'').trim())).map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile'){renderProfile();loadMyPublishedPoems();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='muzyczny-pokoj' && window.odswiezMuzycznyPokoj)window.odswiezMuzycznyPokoj();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved')renderSaved();if(id==='profile'){renderProfile();loadMyPublishedPoems();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function poemCard(p){
  const own=!!p.local, saved=state.saved.includes(p.id);
@@ -990,6 +1008,21 @@ if ('serviceWorker' in navigator) {
  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(e => console.info('PWA:',e)));
 }
 </script>
+
+<script>
+// Muzyczny Pokój: Supabase + RLS. Nie przechowujemy cudzych plików muzycznych.
+(function(){
+ const form=document.getElementById('muzyka-form'),lista=document.getElementById('muzyka-lista'),status=document.getElementById('muzyka-status');
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function linkInfo(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return null;let h=u.hostname.toLowerCase().replace(/^www\./,'');if(h==='youtu.be'){const id=u.pathname.slice(1).split('/')[0];return /^[\w-]{11}$/.test(id)?{url:u.href,embed:'https://www.youtube-nocookie.com/embed/'+id}:null;}if(h==='youtube.com'||h==='m.youtube.com'){let id=u.searchParams.get('v');if(!id&&u.pathname.startsWith('/shorts/'))id=u.pathname.split('/')[2];return /^[\w-]{11}$/.test(id||'')?{url:u.href,embed:'https://www.youtube-nocookie.com/embed/'+id}:null;}if(h==='open.spotify.com'){const a=u.pathname.split('/').filter(Boolean),i=a[0]==='intl-pl'?1:0,type=a[i],id=a[i+1];return ['track','album','playlist','episode','show'].includes(type)&&/^[A-Za-z0-9]{10,30}$/.test(id||'')?{url:u.href,embed:'https://open.spotify.com/embed/'+type+'/'+id}:null;}return null;}catch{return null;}}
+ async function odswiez(){if(typeof db==='undefined'){status.textContent='Nie można połączyć z bazą muzyki.';return;}status.textContent='Pobieram melodie…';const {data,error}=await db.from('muzyczny_pokoj').select('id,pseudonim,tytul,wykonawca,link,opis,utworzono').order('utworzono',{ascending:false}).limit(100);lista.replaceChildren();if(error){status.textContent='Muzyczny Pokój wymaga uruchomienia dołączonego pliku SQL w Supabase. ('+error.message+')';return;}status.textContent=data.length?'Melodie pozostawione przez odwiedzających: '+data.length:'Jeszcze cicho… Dodaj pierwszą melodię!';const {data:{user}}=await db.auth.getUser();const admin=!!(user&&!user.is_anonymous&&user.app_metadata?.role==='admin');for(const x of data){const info=linkInfo(x.link);const card=document.createElement('article');card.className='card';card.innerHTML='<div class="eyebrow">♫ Melodia SZEPTU</div><h3>'+esc(x.tytul)+'</h3>'+(x.wykonawca?'<p class="sub">'+esc(x.wykonawca)+'</p>':'')+'<p class="hint">Dodano przez: '+esc(x.pseudonim)+'</p>'+(x.opis?'<p style="white-space:pre-wrap">'+esc(x.opis)+'</p>':'')+(info?'<div class="muzyka-player"><iframe title="Odtwórz: '+esc(x.tytul)+'" loading="lazy" src="'+esc(info.embed)+'" allow="encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><p><a target="_blank" rel="noopener noreferrer" href="'+esc(info.url)+'">Otwórz utwór ↗</a></p>':'<p class="hint">Nieobsługiwany link</p>');if(admin){const b=document.createElement('button');b.className='ghost danger';b.textContent='Usuń utwór';b.onclick=async()=>{if(!confirm('Usunąć tę melodię?'))return;const {error}=await db.from('muzyczny_pokoj').delete().eq('id',x.id);if(error)alert('Nie udało się usunąć: '+error.message);else odswiez();};card.appendChild(b);}lista.appendChild(card);}}
+ form.addEventListener('submit',async e=>{e.preventDefault();const btn=document.getElementById('muzyka-submit'),link=document.getElementById('muzyka-link').value.trim();if(!linkInfo(link)){alert('Wklej prawidłowy link do utworu na YouTube lub Spotify.');return;}btn.disabled=true;try{const {error}=await db.from('muzyczny_pokoj').insert({pseudonim:document.getElementById('muzyka-autor').value.trim(),tytul:document.getElementById('muzyka-tytul').value.trim(),wykonawca:document.getElementById('muzyka-wykonawca').value.trim(),link,opis:document.getElementById('muzyka-tekst').value.trim()});if(error)throw error;form.reset();await odswiez();alert('Twoja melodia jest już w Muzycznym Pokoju ♡');}catch(err){alert('Nie udało się dodać utworu: '+err.message);}finally{btn.disabled=false;}});
+ window.odswiezMuzycznyPokoj=odswiez;
+})();
+</script>
+<style>
+.muzyka-player{margin:15px 0;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#080e1d}.muzyka-player iframe{width:100%;height:100%;border:0}
+</style>
 </body>
 </html>
 <!-- Panel moderacji SZEPT -->
