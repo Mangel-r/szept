@@ -533,7 +533,7 @@ function poemCard(p){
  const own=!!p.local, saved=state.saved.includes(p.id);
  const emotion=String(p.emotion||'').trim();
  const emotionBadge=emotion?`<div><span class="tag">${escapeHTML(emotion)}</span></div>`:'';
- return `<article class="card poem-card">${emotionBadge}<h3 class="poem-title">${escapeHTML(p.title||'Bez tytułu')}</h3><div class="poem-excerpt">${escapeHTML(p.body||'')}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':p.local?'Tylko na tym urządzeniu':'Opublikowany'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'Zapisano ♥':'Zapisz ♡'}</button>${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`;
+ return `<article class="card poem-card">${emotionBadge}<h3 class="poem-title">${escapeHTML(p.title||'Bez tytułu')}</h3><div class="poem-excerpt">${escapeHTML(p.body||'')}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':p.local?'Tylko na tym urządzeniu':'Opublikowany'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'Zapisano ♥':'Zapisz ♡'}</button>${!p.local&&!p.demo&&/^s[0-9]+$/.test(p.id)?`<button type="button" class="szept-like" data-poem-like="${p.id.slice(1)}" aria-label="Zostaw serce" onclick="szeptLike(this)"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3.5 12.5C-2 6 6 0 12 6c6-6 14 0 8.5 6.5Z"/></svg> <span>…</span></button>`:''}${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`;
 }
 function renderHome(){document.getElementById('homePoems').innerHTML=allPoems().slice(0,3).map(poemCard).join('')}
 const emotions=['Wszystkie','Miłość','Tęsknota','Samotność','Nadzieja','Smutek','Szczęście','Rozstanie','Nowy początek'];
@@ -1023,6 +1023,20 @@ if ('serviceWorker' in navigator) {
 <style>
 .muzyka-player{margin:15px 0;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#080e1d}.muzyka-player iframe{width:100%;height:100%;border:0}
 </style>
+<style>
+.poem-card .card-actions .szept-like{display:inline-flex;align-items:center;gap:6px;color:#a52d46!important;border-color:#b96b78!important}.szept-like svg{fill:none;stroke:currentColor;stroke-width:1.8}.szept-like.liked svg{fill:currentColor}.szept-like:disabled{opacity:.8;cursor:default}
+</style>
+<script>
+(function(){
+let visitor;try{visitor=localStorage.getItem('szept-like-visitor');if(!/^[0-9a-f-]{36}$/i.test(visitor||'')){visitor=crypto.randomUUID();localStorage.setItem('szept-like-visitor',visitor);}}catch(e){}
+const busy=new Set(),cache=new Map();
+function paint(id){const c=cache.get(id);document.querySelectorAll('[data-poem-like="'+id+'"]').forEach(b=>{b.querySelector('span').textContent=c?c.count:'…';b.classList.toggle('liked',!!c?.liked);b.disabled=!visitor||busy.has(id)||!!c?.liked;b.setAttribute('aria-label',c?.liked?'Serce już dodane':'Zostaw serce');});}
+async function refresh(id){try{const [a,b]=await Promise.all([db.from('poem_likes').select('poem_id',{count:'exact',head:true}).eq('poem_id',id),visitor?db.from('poem_likes').select('poem_id').eq('poem_id',id).eq('visitor_id',visitor).maybeSingle():Promise.resolve({data:null})]);if(a.error||b.error)throw a.error||b.error;cache.set(id,{count:a.count,liked:!!b.data});}catch(e){console.error('Serduszka',e);}paint(id);}
+window.szeptLike=async function(btn){const id=btn.dataset.poemLike;if(!visitor||busy.has(id)||cache.get(id)?.liked)return;busy.add(id);paint(id);try{const {error}=await db.from('poem_likes').insert({poem_id:id,visitor_id:visitor});if(error&&error.code!=='23505')throw error;await refresh(id);toast('Dziękujemy za Twoje serce!');}catch(e){toast('Nie udało się zapisać serca. Spróbuj ponownie.');}finally{busy.delete(id);paint(id);}};
+function scan(force=false){const ids=new Set([...document.querySelectorAll('[data-poem-like]')].map(b=>b.dataset.poemLike));ids.forEach(id=>{paint(id);if(force||!cache.has(id))refresh(id);});}
+let timer;const observer=new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches('[data-poem-like]')||n.querySelector('[data-poem-like]'))))){clearTimeout(timer);timer=setTimeout(()=>scan(),50);}});observer.observe(document.body,{childList:true,subtree:true});scan();setInterval(()=>{if(!document.hidden)scan(true);},30000);
+})();
+</script>
 </body>
 </html>
 <!-- Panel moderacji SZEPT -->
