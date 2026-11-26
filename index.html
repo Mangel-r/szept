@@ -369,6 +369,14 @@ a.blog-hero-link:hover{background:#e5c98a16}
 .szept-chat-meta{color:var(--gold);font-size:12px;margin-bottom:5px}.szept-chat-msg{white-space:pre-wrap;color:#f4f0e7}
 .szept-chat-form{margin-top:16px}.szept-chat-form textarea{min-height:95px}.szept-chat-form .row{margin-top:12px}.szept-chat-form .row button{flex:0 0 auto}
 .szept-chat-status{color:var(--muted);font-size:13px;min-height:20px;margin:10px 0 0}
+
+/* Jedna grafika, bez powielania i bez kadrowania */
+#home .sea-banner{aspect-ratio: 1536 / 510 !important; height:auto!important; background:transparent!important; overflow:visible; position:relative; z-index:0; border-radius:20px 20px 0 0;}
+#home .sea-banner::before{content:"";position:absolute;top:0;left:0;width:100%;aspect-ratio:3/2;background:url('szept-zachod.jpg?v=1') center top / 100% auto no-repeat;pointer-events:none;border-radius:20px 20px 0 0;mask-image:linear-gradient(#000 75%,transparent 100%);}
+#home .hero{z-index:1; background:linear-gradient(180deg,transparent 0%,rgba(4,13,30,.30) 38%,#080e1d 100%)!important; padding-top:clamp(16px,3vw,40px);}
+#home .hero::before{display:none!important;}
+#home .hero h1,#home .hero .lead{text-shadow:0 2px 8px #030817,0 0 16px #030817;}
+@media(max-width:700px){#home .sea-banner{aspect-ratio:1536 / 570!important;}#home .hero{padding-top:12px;background:linear-gradient(180deg,transparent,#080e1d 46%)!important;}}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;display=swap">
 <style>
@@ -437,7 +445,7 @@ a.blog-hero-link:hover{background:#e5c98a16}
  </section>
 
  <section id="home" class="page active">
-  <div class="sea-banner"><img src="szept-morze.png?v=20261126-2" width="2172" height="724" alt="SZEPT — morze o zachodzie słońca i butelka z listem"></div>
+  <div class="sea-banner" role="img" aria-label="SZEPT — morze o zachodzie słońca i butelka z listem"></div>
   <div class="hero">
    <h1>Nie wszystko trzeba<br><em>powiedzieć na głos.</em></h1>
    <p class="lead">Czasami wystarczy napisać wiersz, żeby ktoś po drugiej stronie świata poczuł to samo. Czytaj, pisz i wysyłaj swoje słowa w nieznane.</p>
