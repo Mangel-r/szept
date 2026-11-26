@@ -441,7 +441,18 @@ a.blog-hero-link:hover{background:#e5c98a16}
 
  <section id="pokoj-szeptow" class="page" aria-labelledby="pokoj-title">
   <div class="section-head"><div><div class="eyebrow">SZEPT • rozmowy</div><h2 id="pokoj-title">☾ Pokój Szeptów</h2><p class="sub">Przystań dla słów. Rozmawiaj bez zakładania konta, pod wybranym pseudonimem.</p></div></div>
-  <div class="szept-chat">
+  <div class="filterbar" style="justify-content:center"><button id="pub-tab" class="active" type="button">Rozmowy publiczne</button><button id="pm-tab" type="button">Prywatne szepty <span id="pm-count"></span></button></div>
+  <div id="pm-panel" class="szept-chat" hidden>
+   <p id="pm-status" role="status" class="sub"></p>
+   <div id="pm-controls" hidden>
+    <div class="field"><label for="pm-nick">Twój prywatny pseudonim</label><div class="row"><input id="pm-nick" maxlength="40"><button id="pm-save" class="soft">Zapisz</button></div></div>
+    <div class="field"><label for="pm-peer">Rozmówca</label><select id="pm-peer"></select></div>
+    <button id="pm-block" class="ghost">Zablokuj / odblokuj rozmówcę</button>
+    <div id="pm-log" class="szept-chat-log" role="log" style="margin-top:12px"></div>
+    <form id="pm-form" class="szept-chat-form"><textarea id="pm-body" maxlength="1000" required placeholder="Napisz prywatny szept…"></textarea><button class="primary" type="submit">Wyślij prywatnie</button></form>
+   </div>
+  </div>
+  <div id="pub-panel" class="szept-chat">
    <div id="szept-chat-log" class="szept-chat-log" role="log" aria-live="polite"><p class="sub">Ładowanie rozmowy…</p></div>
    <p id="szept-chat-status" class="szept-chat-status" role="status"></p>
    <form id="szept-chat-form" class="szept-chat-form">
@@ -747,7 +758,7 @@ async function odswiezPokojSzeptow(){
     const item=document.createElement('div');item.className='szept-chat-item';
     const meta=document.createElement('div');meta.className='szept-chat-meta';meta.textContent=(m.pseudonim||'Anonim')+' · '+pokojData(m.utworzono);
     const body=document.createElement('div');body.className='szept-chat-msg';body.textContent=m.wiadomosc||'';
-    item.append(meta,body);pokojLog.append(item);
+    item.append(meta,body);const reply=document.createElement('button');reply.type='button';reply.className='ghost';reply.style.cssText='font-size:12px;padding:4px 10px;margin-top:8px';reply.textContent='Odpowiedz';reply.onclick=()=>{const f=document.getElementById('szept-chat-message');f.value='@'+(m.pseudonim||'Anonim')+' '+f.value;f.focus();};item.append(reply);pokojLog.append(item);
    }
    if(atBottom||!pokojLastSignature)pokojLog.scrollTop=pokojLog.scrollHeight;
    pokojLastSignature=signature;
@@ -773,6 +784,37 @@ pokojForm.addEventListener('submit',async e=>{
  finally{send.disabled=false;}
 });
 setInterval(odswiezPokojSzeptow,4000);
+
+(()=>{
+const el=id=>document.getElementById(id), status=t=>el('pm-status').textContent=t;
+let user=null, busy=false, profiles=[], blocks=[], signature='', privateOpen=false;
+const check=r=>{if(r.error)throw r.error;return r.data};
+function tab(on){privateOpen=on;el('pm-panel').hidden=!on;el('pub-panel').hidden=on;el('pm-tab').classList.toggle('active',on);el('pub-tab').classList.toggle('active',!on);if(on)refresh();}
+el('pub-tab').onclick=()=>tab(false);el('pm-tab').onclick=()=>tab(true);
+async function refresh(){if(busy)return;busy=true;try{
+ const session=check(await db.auth.getSession()).session;const next=session?.user&&!session.user.is_anonymous?session.user:null;
+ if(user?.id!==next?.id){el('pm-log').replaceChildren();el('pm-nick').value='';el('pm-peer').replaceChildren();el('pm-body').value='';signature='';}user=next;
+ el('pm-controls').hidden=!user;if(!user){el('pm-count').textContent='';status('Zaloguj się w swoim profilu, aby korzystać z prywatnych szeptów.');return;}
+ const count=await db.from('szept_private_messages').select('id',{count:'exact',head:true}).eq('recipient',user.id).is('read_at',null);if(count.error)throw count.error;el('pm-count').textContent=count.count?'('+count.count+')':'';
+ if(!privateOpen||!el('pokoj-szeptow').classList.contains('active'))return;
+ profiles=check(await db.from('szept_chat_profiles').select('user_id,nickname').order('nickname'));blocks=check(await db.from('szept_chat_blocks').select('blocked').eq('blocker',user.id));
+ const me=profiles.find(p=>p.user_id===user.id);if(document.activeElement!==el('pm-nick')&&!el('pm-nick').value)el('pm-nick').value=me?.nickname||'';
+ const peer=el('pm-peer'), old=peer.value;peer.replaceChildren(new Option('Wybierz rozmówcę',''));for(const p of profiles.filter(p=>p.user_id!==user.id))peer.add(new Option(p.nickname+(blocks.some(b=>b.blocked===p.user_id)?' (zablokowany)':''),p.user_id));peer.value=old;
+ status(me?'Prywatne rozmowy dla zalogowanych użytkowników.':'Najpierw zapisz swój pseudonim.');
+ const target=peer.value;el('pm-form').hidden=!me||!target;el('pm-block').hidden=!me||!target;
+ if(!target){el('pm-log').textContent='Wybierz rozmówcę.';signature='';return;}
+ const rows=check(await db.from('szept_private_messages').select('id,sender,recipient,body,created_at,read_at').or('and(sender.eq.'+user.id+',recipient.eq.'+target+'),and(sender.eq.'+target+',recipient.eq.'+user.id+')').order('created_at',{ascending:false}).limit(100)).reverse();
+ if(peer.value!==target||!privateOpen)return;
+ const sig=target+JSON.stringify(rows);if(sig!==signature){const log=el('pm-log');log.replaceChildren();for(const m of rows){const item=document.createElement('div');item.className='szept-chat-item';if(m.sender===user.id)item.style.cssText='align-self:flex-end;background:#e5c98a18;max-width:90%';const meta=document.createElement('div');meta.className='szept-chat-meta';meta.textContent=(m.sender===user.id?'Ty':profiles.find(p=>p.user_id===m.sender)?.nickname||'Rozmówca')+' · '+pokojData(m.created_at);const body=document.createElement('div');body.className='szept-chat-msg';body.textContent=m.body;item.append(meta,body);log.append(item);}log.scrollTop=log.scrollHeight;signature=sig;}
+ const unread=rows.filter(m=>m.recipient===user.id&&!m.read_at).map(m=>m.id);if(unread.length&&document.visibilityState==='visible')check(await db.from('szept_private_messages').update({read_at:new Date().toISOString()}).in('id',unread));
+ }catch(e){status('Nie udało się odświeżyć: '+e.message);}finally{busy=false;}}
+el('pm-peer').onchange=()=>{signature='';el('pm-log').replaceChildren();refresh();};
+el('pm-save').onclick=async()=>{try{if(!user)return;check(await db.from('szept_chat_profiles').upsert({user_id:user.id,nickname:el('pm-nick').value.trim()}));status('Pseudonim zapisany.');refresh();}catch(e){status('Nie udało się zapisać pseudonimu: '+e.message);}};
+el('pm-block').onclick=async()=>{try{const target=el('pm-peer').value;if(!user||!target)return;if(blocks.some(b=>b.blocked===target))check(await db.from('szept_chat_blocks').delete().eq('blocker',user.id).eq('blocked',target));else check(await db.from('szept_chat_blocks').insert({blocker:user.id,blocked:target}));refresh();}catch(e){status(e.message);}};
+el('pm-form').onsubmit=async e=>{e.preventDefault();const button=e.currentTarget.querySelector('button');button.disabled=true;try{if(!user)return;check(await db.from('szept_private_messages').insert({sender:user.id,recipient:el('pm-peer').value,body:el('pm-body').value.trim()}));el('pm-body').value='';refresh();}catch(e){status('Nie wysłano wiadomości: '+e.message);}finally{button.disabled=false;}};
+db.auth.onAuthStateChange(()=>{el('pm-log').replaceChildren();el('pm-controls').hidden=true;setTimeout(refresh,0);});setInterval(refresh,4000);refresh();
+})();
+
 
 async function Wiersz_opublikowany(title, content, emotion, signature=null) {
   let {data:{session},error:sessionError}=await db.auth.getSession();
