@@ -442,6 +442,7 @@ a.blog-hero-link:hover{background:#e5c98a16}
  <section id="pokoj-szeptow" class="page" aria-labelledby="pokoj-title">
   <div class="section-head"><div><div class="eyebrow">SZEPT • rozmowy</div><h2 id="pokoj-title">☾ Pokój Szeptów</h2><p class="sub">Przystań dla słów. Rozmawiaj bez zakładania konta, pod wybranym pseudonimem.</p></div></div>
   <div class="filterbar" style="justify-content:center"><button id="pub-tab" class="active" type="button">Rozmowy publiczne</button><button id="pm-tab" type="button">Prywatne szepty <span id="pm-count"></span></button></div>
+  <div class="szept-chat" style="margin-bottom:16px;padding:15px"><h3 style="color:var(--gold);margin:0">☾ Kto jest w Pokoju Szeptów?</h3><p id="presence-status" class="sub" role="status">Zaloguj się i zapisz pseudonim w Prywatnych szeptach.</p><label style="display:block;margin:10px 0"><input id="presence-hide" type="checkbox" style="width:auto"> Tryb niewidoczny na tym urządzeniu</label><div id="presence-list" style="display:flex;flex-wrap:wrap;gap:8px;max-height:180px;overflow:auto"></div></div>
   <div id="pm-panel" class="szept-chat" hidden>
    <p id="pm-status" role="status" class="sub"></p>
    <div id="pm-controls" hidden>
@@ -788,6 +789,16 @@ setInterval(odswiezPokojSzeptow,4000);
 (()=>{
 const el=id=>document.getElementById(id), status=t=>el('pm-status').textContent=t;
 let user=null, busy=false, profiles=[], blocks=[], signature='', privateOpen=false;
+let presenceBusy=false, pendingPeer='', lastPing=0, lastVisible=null, lastUser='';
+const hidePresence=el('presence-hide');try{hidePresence.checked=localStorage.getItem('szept_presence_hide')==='1';}catch(e){}
+async function presence(){if(presenceBusy)return;presenceBusy=true;try{
+ const room=el('pokoj-szeptow').classList.contains('active');const visible=room&&!hidePresence.checked&&document.visibilityState==='visible';
+ const session=(await db.auth.getSession()).data.session;const u=session?.user;if(!u||u.is_anonymous){el('presence-list').replaceChildren();el('presence-status').textContent='Zaloguj się, aby zobaczyć dostępność rozmówców.';lastUser='';return;}
+ if(lastUser!==u.id||lastVisible!==visible||(visible&&Date.now()-lastPing>20000)){check(await db.rpc('szept_presence_ping',{visible}));lastUser=u.id;lastVisible=visible;lastPing=Date.now();}
+ if(!room)return;const rows=check(await db.rpc('szept_presence_list'));const list=el('presence-list');list.replaceChildren();const me=rows.find(p=>p.user_id===u.id);el('presence-status').textContent=rows.filter(p=>p.online).length+' online • zalogowani z pseudonimem'+(me?'':' • zapisz swój pseudonim w Prywatnych szeptach');
+ for(const p of rows){const b=document.createElement('button');b.type='button';b.className='ghost';b.style.cssText='font-size:13px;padding:6px 12px';const dot=document.createElement('span');dot.textContent=p.online?'● ':'○ ';dot.style.color=p.online?'#9dd7b3':'#a8b2c7';b.append(dot,document.createTextNode(p.nickname+(p.user_id===u.id?' (Ty)':'')+' · '+(p.online?'online':'offline')));b.disabled=p.user_id===u.id;b.onclick=()=>{pendingPeer=p.user_id;tab(true);};list.append(b);}
+ }catch(e){el('presence-status').textContent='Nie można pobrać obecności. Sprawdź konfigurację Supabase.';el('presence-list').replaceChildren();}finally{presenceBusy=false;}}
+hidePresence.onchange=()=>{try{localStorage.setItem('szept_presence_hide',hidePresence.checked?'1':'0');}catch(e){}presence();};document.addEventListener('visibilitychange',presence);setInterval(presence,5000);presence();
 const check=r=>{if(r.error)throw r.error;return r.data};
 function tab(on){privateOpen=on;el('pm-panel').hidden=!on;el('pub-panel').hidden=on;el('pm-tab').classList.toggle('active',on);el('pub-tab').classList.toggle('active',!on);if(on)refresh();}
 el('pub-tab').onclick=()=>tab(false);el('pm-tab').onclick=()=>tab(true);
@@ -799,7 +810,7 @@ async function refresh(){if(busy)return;busy=true;try{
  if(!privateOpen||!el('pokoj-szeptow').classList.contains('active'))return;
  profiles=check(await db.from('szept_chat_profiles').select('user_id,nickname').order('nickname'));blocks=check(await db.from('szept_chat_blocks').select('blocked').eq('blocker',user.id));
  const me=profiles.find(p=>p.user_id===user.id);if(document.activeElement!==el('pm-nick')&&!el('pm-nick').value)el('pm-nick').value=me?.nickname||'';
- const peer=el('pm-peer'), old=peer.value;peer.replaceChildren(new Option('Wybierz rozmówcę',''));for(const p of profiles.filter(p=>p.user_id!==user.id))peer.add(new Option(p.nickname+(blocks.some(b=>b.blocked===p.user_id)?' (zablokowany)':''),p.user_id));peer.value=old;
+ const peer=el('pm-peer'), old=peer.value;peer.replaceChildren(new Option('Wybierz rozmówcę',''));for(const p of profiles.filter(p=>p.user_id!==user.id))peer.add(new Option(p.nickname+(blocks.some(b=>b.blocked===p.user_id)?' (zablokowany)':''),p.user_id));peer.value=pendingPeer||old;pendingPeer='';
  status(me?'Prywatne rozmowy dla zalogowanych użytkowników.':'Najpierw zapisz swój pseudonim.');
  const target=peer.value;el('pm-form').hidden=!me||!target;el('pm-block').hidden=!me||!target;
  if(!target){el('pm-log').textContent='Wybierz rozmówcę.';signature='';return;}
@@ -809,7 +820,7 @@ async function refresh(){if(busy)return;busy=true;try{
  const unread=rows.filter(m=>m.recipient===user.id&&!m.read_at).map(m=>m.id);if(unread.length&&document.visibilityState==='visible')check(await db.from('szept_private_messages').update({read_at:new Date().toISOString()}).in('id',unread));
  }catch(e){status('Nie udało się odświeżyć: '+e.message);}finally{busy=false;}}
 el('pm-peer').onchange=()=>{signature='';el('pm-log').replaceChildren();refresh();};
-el('pm-save').onclick=async()=>{try{if(!user)return;check(await db.from('szept_chat_profiles').upsert({user_id:user.id,nickname:el('pm-nick').value.trim()}));status('Pseudonim zapisany.');refresh();}catch(e){status('Nie udało się zapisać pseudonimu: '+e.message);}};
+el('pm-save').onclick=async()=>{try{if(!user)return;check(await db.from('szept_chat_profiles').upsert({user_id:user.id,nickname:el('pm-nick').value.trim()}));status('Pseudonim zapisany.');lastPing=0;presence();refresh();}catch(e){status('Nie udało się zapisać pseudonimu: '+e.message);}};
 el('pm-block').onclick=async()=>{try{const target=el('pm-peer').value;if(!user||!target)return;if(blocks.some(b=>b.blocked===target))check(await db.from('szept_chat_blocks').delete().eq('blocker',user.id).eq('blocked',target));else check(await db.from('szept_chat_blocks').insert({blocker:user.id,blocked:target}));refresh();}catch(e){status(e.message);}};
 el('pm-form').onsubmit=async e=>{e.preventDefault();const button=e.currentTarget.querySelector('button');button.disabled=true;try{if(!user)return;check(await db.from('szept_private_messages').insert({sender:user.id,recipient:el('pm-peer').value,body:el('pm-body').value.trim()}));el('pm-body').value='';refresh();}catch(e){status('Nie wysłano wiadomości: '+e.message);}finally{button.disabled=false;}};
 db.auth.onAuthStateChange(()=>{el('pm-log').replaceChildren();el('pm-controls').hidden=true;setTimeout(refresh,0);});setInterval(refresh,4000);refresh();
