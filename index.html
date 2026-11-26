@@ -375,6 +375,15 @@ a.blog-hero-link:hover{background:#e5c98a16}
 .szept-heart-invitation{margin:22px auto 30px;padding:12px 8px;text-align:center;color:#e8cb8c;font-family:"Great Vibes","Brush Script MT",Georgia,cursive;font-size:clamp(30px,4.5vw,48px);line-height:1.35;text-shadow:0 2px 8px #000,0 0 15px #e8cb8c33;}
 .szept-heart-invitation svg{display:block;width:26px;height:26px;margin:12px auto 0;fill:#df5267;filter:drop-shadow(0 0 7px #df526755);}
 </style>
+
+<style>
+/* SZEPT: płynne przejście morza pod tekstem strony głównej */
+#home .sea-banner{aspect-ratio:3/1;background-size:100% auto;background-position:center top;border-radius:20px 20px 0 0;filter:brightness(1.12);}
+#home .hero{position:relative;isolation:isolate;overflow:hidden;margin-top:-1px;border-radius:0 0 22px 22px;background:#080e1d;}
+#home .hero::before{content:"";position:absolute;top:0;left:0;right:0;height:65%;z-index:-1;pointer-events:none;background:linear-gradient(to bottom,rgba(8,14,29,.32),rgba(8,14,29,.70) 40%,#080e1d 100%),url("szept-morze.png?v=20261126-2") center bottom / 100% auto no-repeat;background-size:100% 100%,auto 330%;background-position:center,center bottom;}
+#home .hero h1,#home .hero .lead{text-shadow:0 2px 9px #030817;}
+@media(max-width:700px){#home .hero{padding-top:20px;}}
+</style>
 </head>
 <body>
 <header>
