@@ -377,10 +377,10 @@ a.blog-hero-link:hover{background:#e5c98a16}
 </style>
 
 <style>
-/* SZEPT: płynne przejście morza pod tekstem strony głównej */
-#home .sea-banner{aspect-ratio:3/1;background-size:100% auto;background-position:center top;border-radius:20px 20px 0 0;filter:brightness(1.12);}
-#home .hero{position:relative;isolation:isolate;overflow:hidden;margin-top:-1px;border-radius:0 0 22px 22px;background:#080e1d;}
-#home .hero::before{content:"";position:absolute;top:0;left:0;right:0;height:65%;z-index:-1;pointer-events:none;background:linear-gradient(to bottom,rgba(8,14,29,.32),rgba(8,14,29,.70) 40%,#080e1d 100%),url("szept-morze.png?v=20261126-2") center bottom / 100% auto no-repeat;background-size:100% 100%,auto 330%;background-position:center,center bottom;}
+/* SZEPT: jeden baner, płynne przejście w tło */
+#home .sea-banner{aspect-ratio:3/1!important;height:auto!important;min-height:0!important;background-size:contain!important;background-position:center!important;border-radius:20px 20px 0 0;filter:brightness(1.10);}
+#home .hero{position:relative;isolation:isolate;overflow:hidden;margin-top:0;border-radius:0 0 22px 22px;background:#080e1d!important;}
+#home .hero::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(to bottom,rgba(8,14,29,.12),rgba(8,14,29,.76) 42%,#080e1d 85%),url("szept-fale.jpg") center top / 100% auto no-repeat;}
 #home .hero h1,#home .hero .lead{text-shadow:0 2px 9px #030817;}
 @media(max-width:700px){#home .hero{padding-top:20px;}}
 </style>
