@@ -424,6 +424,12 @@ a.blog-hero-link:hover{background:#e5c98a16}
 #bottle .bottle-night .sea-ripple{display:none!important}
 #bottle .bottle-night button{z-index:3!important}
 </style>
+<style>
+#notifyBell{position:relative;flex:0 0 42px;width:42px;height:42px;display:grid;place-items:center;border:1px solid #d6ba7655;background:#101b30;border-radius:50%;color:#e5c98a;cursor:pointer;padding:0}
+#notifyBell svg{width:22px;height:22px}#notifyCount{position:absolute;top:-5px;right:-7px;min-width:20px;padding:2px 4px;border-radius:16px;background:#e5c98a;color:#101827;font-size:11px;font-weight:bold;text-align:center;line-height:16px}
+#notifyCount[hidden],#notifyPrefs[hidden]{display:none!important}.notify-row{display:flex;width:100%;gap:13px;text-align:left;align-items:flex-start;padding:15px 12px;color:#e8e4dc;background:#101b30;border:1px solid #ffffff16;border-radius:14px;cursor:pointer;min-width:0}.notify-row.unread{background:#e5c98a12;border-color:#e5c98a70}.notify-icon{font-size:21px;color:#e5c98a;flex:0 0 30px;text-align:center}.notify-body{display:grid;gap:5px;overflow-wrap:anywhere;min-width:0}.notify-body strong{color:#f1dca7;font-size:16px}.notify-body span{font-size:14px}.notify-body small{color:#bec6d8;font-size:12px}#notifyList{display:grid;gap:9px;margin:17px 0}#notifyPrefs label{display:flex;align-items:center;gap:10px;margin:10px 0;color:#e3e1dc}#notifyPrefs input{width:18px;height:18px;accent-color:#d6ba76;flex:none}#notifyBell:focus-visible,.notify-row:focus-visible{outline:2px solid #e5c98a;outline-offset:3px}#notifyPoemTarget:focus,#notifyBottleTarget:focus{outline:2px solid #e5c98a;outline-offset:3px}
+@media (min-width:701px) and (max-width:800px){#notifyBell{position:absolute;right:15px;top:10px}}@media(max-width:700px){#notifyBell{position:absolute;right:16px;top:11px}.topbar .brand{max-width:calc(100% - 65px);margin-right:35px}}
+</style>
 </head>
 <body>
 <header>
@@ -440,8 +446,9 @@ a.blog-hero-link:hover{background:#e5c98a16}
    <button class="navbtn" data-page="pokoj-szeptow">Pokój Szeptów</button>
    <button class="navbtn" data-page="muzyczny-pokoj">🎶 Muzyczny Pokój</button>
    <button class="navbtn" data-page="moderation" id="moderationBtn" style="display:none">Moderacja</button>
-  </nav>
- </div>
+   </nav>
+   <button id="notifyBell" type="button" title="Powiadomienia" aria-label="Powiadomienia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span id="notifyCount" hidden>0</span></button>
+  </div>
 </header>
 <main class="shell">
  
@@ -549,12 +556,16 @@ a.blog-hero-link:hover{background:#e5c98a16}
   </div>
  </section>
 
- <section id="profile" class="page">
+   <section id="notifications" class="page" aria-labelledby="notifyTitle">
+   <div class="card" style="max-width:760px;margin:auto"><div class="eyebrow">Bądź blisko słów</div><h2 id="notifyTitle">Powiadomienia</h2><p class="sub">Wiadomości, serca i nowe wiersze w jednym miejscu.</p><p id="notifyStatus" class="hint" role="status">Wczytywanie…</p><div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" class="soft" id="notifyRefresh">Odśwież</button><button type="button" class="soft" id="notifyAll" disabled>Oznacz wszystkie jako przeczytane</button><button type="button" class="ghost" id="notifySettings">Ustawienia</button></div><div id="notifyList"></div></div>
+  </section>
+  <section id="profile" class="page">
   <div class="card" style="max-width:760px;margin:auto">
    <div class="eyebrow">Twoja mała przestrzeń</div><h2>Mój profil</h2>
    <div class="field"><label for="nickname">Pseudonim autora</label><input id="nickname" maxlength="32" placeholder="Jak mamy Cię nazywać?"></div>
    <div class="field"><label for="bio">Kilka słów o Tobie</label><textarea id="bio" style="min-height:90px" maxlength="240" placeholder="Lubię pisać o..."></textarea></div>
-   <button class="primary" onclick="saveProfile()">Zapisz profil</button>
+       <button class="primary" onclick="saveProfile()">Zapisz profil</button>
+    <div id="notifyPrefs" class="card" style="margin:20px 0;background:#0b1529" hidden><h3 id="notifyPrefsHeading" tabindex="-1">Powiadomienia</h3><p class="hint">Wybierz, o czym chcesz otrzymywać powiadomienia.</p><label><input type="checkbox" data-pref="poems" checked>Nowe wiersze w Czytelni</label><label><input type="checkbox" data-pref="likes" checked>Serduszka pod moimi wierszami</label><label><input type="checkbox" data-pref="messages" checked>Prywatne szepty</label><label><input type="checkbox" data-pref="bottles" checked>Otrzymane i otwarte butelki</label><p class="hint" id="notifyPrefStatus" role="status"></p></div>
    <div class="profile-stat"><button type="button" class="stat" onclick="jumpToSzeptSection('myPublishedSection')"><strong id="myCount">0</strong><span class="hint">Moje wiersze</span></button><button type="button" class="stat" onclick="jumpToSzeptSection('savedSection')"><strong id="savedCount">0</strong><span class="hint">Zapisane</span></button><button type="button" class="stat" onclick="showPage('bottle','sentBottlesSection')"><strong id="bottleCount">0</strong><span class="hint">Butelki</span></button></div>
    <div class="card" style="margin:24px 0;background:#0b1529;border:1px solid #35415d">
     <h3 id="myPublishedSection" tabindex="-1">Moje opublikowane wiersze ✍️</h3>
@@ -602,13 +613,13 @@ function allPoems(){return [...sharedPoems,...state.poems.filter(p=>!['Kiedy mia
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
 function jumpToSzeptSection(id){const target=document.getElementById(id);if(!target)return;target.focus({preventScroll:true});const header=document.querySelector('header');const offset=header?header.getBoundingClientRect().bottom:0;window.scrollTo({top:Math.max(0,window.scrollY+target.getBoundingClientRect().top-offset-16),behavior:'smooth'});}
-function showPage(id,target){if(id==='saved'){id='profile';target='savedSection';}if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='muzyczny-pokoj' && window.odswiezMuzycznyPokoj)window.odswiezMuzycznyPokoj();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='profile'){renderProfile();renderSaved();loadMyPublishedPoems();refreshAccount();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}if(target){jumpToSzeptSection(target);}else{window.scrollTo({top:0,behavior:'smooth'});}}
+function showPage(id,target){if(id==='saved'){id='profile';target='savedSection';}if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='muzyczny-pokoj' && window.odswiezMuzycznyPokoj)window.odswiezMuzycznyPokoj();if(id==='library'){renderLibrary();window.szeptLibraryRefresh=refreshSharedPoems();}if(id==='profile'){renderProfile();renderSaved();loadMyPublishedPoems();refreshAccount();}if(id==='bottle'){renderBottleSelect();window.szeptBottleRefresh=Promise.all([loadReceivedBottles(),loadSentBottles()]);}if(target){jumpToSzeptSection(target);}else{window.scrollTo({top:0,behavior:'smooth'});}}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function poemCard(p){
  const own=!!p.local, saved=savedIds().includes(p.id);
  const emotion=String(p.emotion||'').trim();
  const emotionBadge=emotion?`<div><span class="tag">${escapeHTML(emotion)}</span></div>`:'';
- return `<article class="card poem-card">${emotionBadge}<h3 class="poem-title">${escapeHTML(p.title||'Bez tytułu')}</h3><div class="poem-excerpt">${escapeHTML(p.body||'')}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':p.local?'Tylko na tym urządzeniu':'Opublikowany'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'Zapisano ♥':'Zapisz ♡'}</button>${!p.local&&!p.demo&&/^s[0-9]+$/.test(p.id)?`<button type="button" class="szept-like" data-poem-like="${p.id.slice(1)}" aria-label="Zostaw serce" onclick="szeptLike(this)"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3.5 12.5C-2 6 6 0 12 6c6-6 14 0 8.5 6.5Z"/></svg> <span>…</span></button>`:''}${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`;
+ return `<article class="card poem-card" data-notify-poem="${escapeHTML(p.id)}">${emotionBadge}<h3 class="poem-title">${escapeHTML(p.title||'Bez tytułu')}</h3><div class="poem-excerpt">${escapeHTML(p.body||'')}</div><div class="meta"><span>✦ ${escapeHTML(p.author||'Anonim')}</span><span>${p.demo?'Przykładowy tekst':p.local?'Tylko na tym urządzeniu':'Opublikowany'}</span></div><div class="card-actions"><button class="soft" onclick="toggleSave('${p.id}')">${saved?'Zapisano ♥':'Zapisz ♡'}</button>${!p.local&&!p.demo&&/^s[0-9]+$/.test(p.id)?`<button type="button" class="szept-like" data-poem-like="${p.id.slice(1)}" aria-label="Zostaw serce" onclick="szeptLike(this)"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 3.5 12.5C-2 6 6 0 12 6c6-6 14 0 8.5 6.5Z"/></svg> <span>…</span></button>`:''}${own?`<button class="soft" onclick="deletePoem('${p.id}')">Usuń</button>`:''}</div></article>`;
 }
 function renderHome(){document.getElementById('homePoems').innerHTML=allPoems().slice(0,3).map(poemCard).join('')}
 const emotions=['Wszystkie','Miłość','Tęsknota','Samotność','Nadzieja','Smutek','Szczęście','Rozstanie','Nowy początek'];
@@ -666,6 +677,7 @@ async function sendBottle(){
  }catch(error){console.error('Butelka: wysyłanie',error);alert('Nie udało się wysłać butelki: '+error.message);}
  finally{button.disabled=false;button.textContent='Wyślij w świat';}
 }
+window.szeptBottleKey=b=>String(b.bottle_id??b.id??JSON.stringify([String(b.title||'').slice(0,200),b.sent_at||'']));
 async function loadReceivedBottles(){
  const root=document.getElementById('receivedBottles');
  root.textContent='Szukamy butelek…';
@@ -677,8 +689,9 @@ async function loadReceivedBottles(){
   data.forEach(b=>{
    const card=document.createElement('article');
    card.className='card';
-   card.style.marginBottom='16px';
-   const title=document.createElement('h3');
+    card.style.marginBottom='16px';
+    card.dataset.notifyBottle=window.szeptBottleKey(b);
+    const title=document.createElement('h3');
    title.textContent='💌 '+(b.title||'Bez tytułu');
    const date=document.createElement('p');
    date.className='hint';
@@ -733,8 +746,9 @@ async function loadSentBottles(){
   data.forEach(b=>{
    const card=document.createElement('article');
    card.className='card';
-   card.style.marginBottom='12px';
-   const heading=document.createElement('h3');
+    card.style.marginBottom='12px';
+    card.dataset.notifyBottle=window.szeptBottleKey(b);
+    const heading=document.createElement('h3');
    heading.style.margin='0 0 8px';
    heading.textContent=b.title||'Bez tytułu';
    const status=document.createElement('p');
@@ -934,6 +948,7 @@ hidePresence.onchange=()=>{try{localStorage.setItem('szept_presence_hide',hidePr
 const check=r=>{if(r.error)throw r.error;return r.data};
 function tab(on){privateOpen=on;el('pm-panel').hidden=!on;el('pub-panel').hidden=on;el('pm-tab').classList.toggle('active',on);el('pub-tab').classList.toggle('active',!on);if(on)refresh();}
 el('pub-tab').onclick=()=>tab(false);el('pm-tab').onclick=()=>tab(true);
+window.szeptOpenPrivatePeer=id=>{pendingPeer=id;signature='';tab(true);};
 async function refresh(){if(busy)return;busy=true;try{
  const session=check(await db.auth.getSession()).session;const next=session?.user&&!session.user.is_anonymous?session.user:null;
  if(user?.id!==next?.id){el('pm-log').replaceChildren();el('pm-nick').value='';el('pm-peer').replaceChildren();el('pm-body').value='';signature='';}user=next;
@@ -1284,6 +1299,91 @@ function shader(type,src){const sh=gl.createShader(type);gl.shaderSource(sh,src)
 function start(){try{const program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vs));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))return;gl.useProgram(program);const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);const loc=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);const time=gl.getUniformLocation(program,'t');scene.insertBefore(canvas,scene.querySelector('button'));const reduced=matchMedia('(prefers-reduced-motion: reduce)');let last=0;function frame(now){requestAnimationFrame(frame);if(!scene.getClientRects().length||document.hidden||now-last<32)return;last=now;const w=Math.min(img.naturalWidth,Math.round(img.clientWidth*Math.min(devicePixelRatio,2))),h=Math.round(w*img.naturalHeight/img.naturalWidth);if(!w||!h)return;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}gl.uniform1f(time,reduced.matches?0:now/1000);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);}requestAnimationFrame(frame);canvas.addEventListener('webglcontextlost',()=>canvas.remove());}catch(e){canvas.remove();}}
 if(img.complete&&img.naturalWidth)start();else img.addEventListener('load',start,{once:true});
 })();
+</script>
+<script>
+(()=>{
+ const el=id=>document.getElementById(id), bell=el('notifyBell'), root=el('notifyList'), status=el('notifyStatus'), counter=el('notifyCount'), all=el('notifyAll'), prefBox=el('notifyPrefs'), prefStatus=el('notifyPrefStatus');
+ const defaults={poems:true,likes:true,messages:true,bottles:true};
+ const fields=Object.keys(defaults), inputs=[...prefBox.querySelectorAll('input[type=checkbox]')];
+ const cutoff=()=>new Date(Date.now()-30*86400000).toISOString();
+ const fresh=date=>Number.isFinite(Date.parse(date))&&Date.parse(date)>=Date.parse(cutoff());
+ let uid=null,generation=0,busy=false,queued=false,mutating=false,rows=[],reads=new Set(),prefs={...defaults},ready=false,prefReady=false;
+ const check=r=>{if(r.error)throw r.error;return r.data;};
+ const sessionId=async()=>{const u=check(await db.auth.getSession()).session?.user;return u&&!u.is_anonymous?u.id:null;};
+ function paint(){
+  const unread=rows.filter(r=>!r.already&&!reads.has(r.key)).length;
+  counter.hidden=!uid||!unread;counter.textContent=unread>99?'99+':String(unread);bell.setAttribute('aria-label','Powiadomienia'+(unread?', nieprzeczytane: '+unread:''));
+  all.disabled=!uid||!ready||mutating||!unread;
+  prefBox.hidden=!uid;inputs.forEach(i=>{i.checked=prefs[i.dataset.pref];i.disabled=!prefReady||mutating;});
+  root.replaceChildren();
+  if(!uid){root.textContent='Zaloguj się, aby zobaczyć swoje powiadomienia.';return;}
+  if(!ready){root.textContent='Wczytywanie powiadomień…';return;}
+  if(!rows.length){root.textContent='Na razie cicho… Tu pojawią się nowe szepty.';return;}
+  for(const r of rows){
+   const unread=!r.already&&!reads.has(r.key), button=document.createElement('button');button.type='button';button.className='notify-row'+(unread?' unread':'');
+   const icon=document.createElement('span');icon.className='notify-icon';icon.textContent=r.icon;icon.setAttribute('aria-hidden','true');
+   const body=document.createElement('span');body.className='notify-body';const title=document.createElement('strong');title.textContent=r.label;const info=document.createElement('span');info.textContent=r.title;const time=document.createElement('small');time.textContent=new Date(r.date).toLocaleString('pl-PL')+(unread?' · Nowe':' · Przeczytane');body.append(title,info,time);button.append(icon,body);button.onclick=()=>openRow(r);root.append(button);
+  }
+ }
+ function reset(next){generation++;uid=next;rows=[];reads=new Set();prefs={...defaults};ready=false;prefReady=false;mutating=false;status.textContent=uid?'Pobieram powiadomienia…':'Powiadomienia są dostępne po zalogowaniu.';prefStatus.textContent='';paint();}
+ async function refresh(){
+  if(busy||mutating){queued=true;return;}busy=true;
+  try{
+   const next=await sessionId();if(next!==uid)reset(next);if(!uid){status.textContent='Powiadomienia są dostępne po zalogowaniu.';paint();return;}
+   const owner=uid,gen=generation, since=cutoff();
+   const results=await Promise.allSettled([
+    db.from('szept_notification_preferences').select('poems,likes,messages,bottles').eq('user_id',owner).maybeSingle().then(check),
+    db.rpc('szept_notification_feed').then(check),
+    db.from('szept_private_messages').select('id,sender,created_at,read_at').eq('recipient',owner).gte('created_at',since).order('created_at',{ascending:false}).limit(100).then(check),
+    db.rpc('szept_receive_bottles').then(check),db.rpc('szept_my_sent_bottles').then(check)
+   ]);
+   if(gen!==generation||await sessionId()!==owner)return;
+   const value=i=>results[i].status==='fulfilled'?results[i].value:null;
+   if(results[0].status==='fulfilled'){prefs={...defaults,...(value(0)||{})};prefReady=true;prefStatus.textContent='Ustawienia zapisują się na Twoim koncie.';}else{prefReady=false;prefStatus.textContent='Nie udało się pobrać ustawień.';}
+   const list=[];
+   for(const e of value(1)||[]){const poem=e.kind==='poem';if(!prefs[poem?'poems':'likes'])continue;list.push({key:'event:'+e.event_id,kind:'poem',id:String(e.poem_id),date:e.created_at,icon:poem?'📖':'♡',label:poem?'Nowy wiersz w Czytelni':'Ktoś polubił Twój wiersz',title:e.title||'Bez tytułu'});}
+   if(prefs.messages)for(const m of value(2)||[])list.push({key:'message:'+m.id,kind:'message',id:m.sender,date:m.created_at,already:!!m.read_at,icon:'✉',label:'Nowy prywatny szept',title:'Otwórz rozmowę w Pokoju Szeptów'});
+   if(prefs.bottles){
+    for(const b of value(3)||[])if(fresh(b.sent_at))list.push({key:'received:'+window.szeptBottleKey(b),kind:'received',id:window.szeptBottleKey(b),date:b.sent_at,already:!!b.opened_at,icon:'🌊',label:'Butelka dotarła do Twojego brzegu',title:b.title||'Wiadomość z morza'});
+    for(const b of value(4)||[])if(fresh(b.opened_at))list.push({key:'opened:'+window.szeptBottleKey(b),kind:'sent',id:window.szeptBottleKey(b),date:b.opened_at,icon:'💌',label:'Twoja butelka została otwarta',title:b.title||'Wiadomość z morza'});
+   }
+   const filtered=[...new Map(list.filter(r=>fresh(r.date)).map(r=>[r.key,r])).values()].sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,100);
+   const seen=new Set();for(let start=0;start<filtered.length;start+=20){const {data,error}=await db.from('szept_notification_reads').select('event_key').eq('user_id',owner).in('event_key',filtered.slice(start,start+20).map(r=>r.key));if(error)throw error;(data||[]).forEach(r=>seen.add(r.event_key));}
+   if(gen!==generation||await sessionId()!==owner)return;
+   rows=filtered;reads=seen;ready=true;status.textContent=results.some(r=>r.status==='rejected')?'Nie udało się pobrać części powiadomień. Spróbuj odświeżyć.':'Ostatnie 30 dni · maksymalnie 100 najnowszych powiadomień';paint();
+  }catch(e){console.error('Powiadomienia',e);status.textContent='Nie udało się pobrać powiadomień. Sprawdź połączenie lub aktualizację Supabase.';if(!ready)root.textContent='Powiadomienia chwilowo niedostępne.';}
+  finally{busy=false;if(queued&&!mutating){queued=false;setTimeout(refresh,0);}}
+ }
+ async function mark(items){
+  if(!uid||mutating||!items.length)return !items.length;
+  const owner=uid,gen=generation;mutating=true;paint();
+  try{if(await sessionId()!==owner)return false;check(await db.from('szept_notification_reads').upsert(items.map(r=>({user_id:owner,event_key:r.key})),{onConflict:'user_id,event_key',ignoreDuplicates:true}));if(gen!==generation||await sessionId()!==owner)return false;items.forEach(r=>reads.add(r.key));paint();return true;}
+  catch(e){toast('Nie udało się oznaczyć powiadomienia.');return false;}finally{if(gen===generation){mutating=false;paint();refresh();}}
+ }
+ async function openRow(r){
+  const owner=uid;if(!owner||mutating)return;
+  if(!r.already&&!reads.has(r.key)){if(!await mark([r]))return;}
+  if(await sessionId()!==owner)return;
+  if(r.kind==='message'){showPage('pokoj-szeptow');window.szeptOpenPrivatePeer?.(r.id);jumpToSzeptSection('pm-panel');return;}
+  if(r.kind==='received'||r.kind==='sent'){showPage('bottle');await window.szeptBottleRefresh;const container=el(r.kind==='received'?'receivedBottles':'sentBottles');const card=[...container.children].find(c=>c.dataset.notifyBottle===r.id);if(card){card.tabIndex=-1;card.id='notifyBottleTarget';jumpToSzeptSection(card.id);}else jumpToSzeptSection(r.kind==='received'?'receivedBottles':'sentBottlesSection');return;}
+  activeFilter='Wszystkie';showPage('library');await window.szeptLibraryRefresh;
+  const id='s'+r.id;
+  if(!sharedPoems.some(p=>p.id===id)){try{const p=check(await db.from('Poems').select('id,title,content,emotion,created_at,author_signature').eq('id',r.id).eq('status','published').maybeSingle());if(p){sharedPoems.unshift({id:'s'+p.id,title:p.title,body:p.content,emotion:p.emotion,author:p.author_signature||'Anonim',created:p.created_at});renderLibrary();}}catch(e){console.error(e);}}
+  const card=[...el('poemList').children].find(c=>c.dataset.notifyPoem===id);if(card){card.tabIndex=-1;card.id='notifyPoemTarget';jumpToSzeptSection(card.id);}else toast('Ten wiersz nie jest już dostępny.');
+ }
+ inputs.forEach(input=>input.onchange=async()=>{
+  if(!uid||mutating||!prefReady){paint();return;}
+  const owner=uid,gen=generation,key=input.dataset.pref,next=input.checked;mutating=true;paint();
+  try{if(await sessionId()!==owner)return;check(await db.from('szept_notification_preferences').upsert({user_id:owner,...prefs,[key]:next}));if(gen===generation){prefs[key]=next;prefStatus.textContent='Zapisano ustawienia.';}}
+  catch(e){prefStatus.textContent='Nie udało się zapisać ustawienia.';}
+  finally{if(gen===generation){mutating=false;paint();refresh();}}
+ });
+ bell.onclick=()=>{showPage('notifications');refresh();};el('notifyRefresh').onclick=refresh;all.onclick=()=>mark(rows.filter(r=>!r.already&&!reads.has(r.key)));
+ el('notifySettings').onclick=()=>uid?showPage('profile','notifyPrefsHeading'):showPage('profile');
+ db.auth.onAuthStateChange((_event,session)=>{const next=session?.user&&!session.user.is_anonymous?session.user.id:null;if(next!==uid)reset(next);setTimeout(refresh,0);});
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});setInterval(()=>{if(!document.hidden)refresh();},20000);refresh();
+})();
+
 </script>
 </body>
 </html>
