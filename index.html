@@ -745,7 +745,7 @@ async function loadSentBottles(){
  }catch(error){console.error('Butelka: statusy',error);root.textContent='Nie udało się odczytać statusów: '+error.message;}
 }
 function saveProfile(){state.profile.nickname=document.getElementById('nickname').value.trim();state.profile.bio=document.getElementById('bio').value.trim();persist();toast('Profil zapisany')}
-function renderProfile(){document.getElementById('nickname').value=state.profile.nickname||'';document.getElementById('bio').value=state.profile.bio||'';document.getElementById('myCount').textContent=state.poems.length;document.getElementById('savedCount').textContent=state.saved.length;document.getElementById('bottleCount').textContent=state.bottles.length}
+function renderProfile(){document.getElementById('nickname').value=state.profile.nickname||'';document.getElementById('bio').value=state.profile.bio||'';document.getElementById('myCount').textContent='…';document.getElementById('savedCount').textContent=state.saved.length;document.getElementById('bottleCount').textContent=state.bottles.length}
 function clearData(){if(!confirm('Czy na pewno usunąć wszystkie Twoje lokalne wiersze, szkice, zapisane teksty i profil?'))return;state={poems:[],saved:[],bottles:[],profile:{}};persist();localStorage.removeItem(KEY+'-draft');renderHome();renderLibrary();renderSaved();renderProfile();toast('Lokalne dane zostały usunięte')}
 renderHome();renderLibrary();renderSaved();renderProfile();
 try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getElementById('title').value=d.title||'';document.getElementById('body').value=d.body||''}}catch(e){}
@@ -1068,19 +1068,31 @@ async function adminCall(name,args){
 async function loadMyPublishedPoems(){
  const root=document.getElementById('myPublishedPoems');
  if(!root)return;
+ const count=document.getElementById('myCount');
+ count.textContent='…';
  root.textContent='Wczytywanie wierszy…';
  try{
   const {data:{user},error:authError}=await db.auth.getUser();
   if(authError)throw authError;
-  if(!user || user.is_anonymous){root.textContent='Zaloguj się na konto, z którego opublikowano wiersze.';return;}
+  if(!user || user.is_anonymous){count.textContent='—';root.textContent='Zaloguj się na konto, z którego opublikowano wiersze.';return;}
   const {data,error}=await db.rpc('szept_my_published_poems');
   if(error)throw error;
+  count.textContent=String(data?.length||0);
   root.replaceChildren();
   if(!data?.length){root.textContent='Nie znaleziono opublikowanych wierszy przypisanych do tego konta.';return;}
   for(const poem of data){
    const card=document.createElement('div');card.className='card';card.style.margin='10px 0';
    const title=document.createElement('h3');title.textContent=poem.title||'Bez tytułu';card.appendChild(title);
    const sign=document.createElement('p');sign.className='hint';sign.textContent='Podpis: '+(poem.author_signature||'Anonim');card.appendChild(sign);
+   const read=document.createElement('button');read.type='button';read.className='soft';read.textContent='Czytaj wiersz';read.setAttribute('aria-expanded','false');
+   const body=document.createElement('div');body.className='poem-excerpt';body.hidden=true;body.style.margin='12px 0';
+   read.addEventListener('click',async()=>{
+    if(!body.hidden){body.hidden=true;read.textContent='Czytaj wiersz';read.setAttribute('aria-expanded','false');return;}
+    read.disabled=true;
+    try{const {data:row,error}=await db.from('Poems').select('content').eq('id',poem.id).eq('user_id',user.id).eq('status','published').single();if(error)throw error;body.textContent=row.content||'';body.hidden=false;read.textContent='Zwiń wiersz';read.setAttribute('aria-expanded','true');}
+    catch(e){alert('Nie udało się pobrać treści wiersza: '+e.message);}finally{read.disabled=false;}
+   });
+   card.append(read,body);
    const button=document.createElement('button');button.className='soft';button.textContent='✍ Zmień podpis';
    button.addEventListener('click',async()=>{
     const proposed=prompt('Wpisz swój pseudonim (maks. 32 znaki). Puste pole oznacza „Anonim”:',poem.author_signature||'');
@@ -1097,7 +1109,7 @@ async function loadMyPublishedPoems(){
    });
    card.appendChild(button);root.appendChild(card);
   }
- }catch(err){root.textContent='Nie udało się pobrać Twoich wierszy: '+err.message;}
+ }catch(err){count.textContent='—';root.textContent='Nie udało się pobrać Twoich wierszy: '+err.message;}
 }
 
 db.auth.onAuthStateChange(() => {
