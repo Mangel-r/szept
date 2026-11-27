@@ -560,13 +560,15 @@ a.blog-hero-link:hover{background:#e5c98a16}
    <div class="field"><label for="nickname">Pseudonim autora</label><input id="nickname" maxlength="32" placeholder="Jak mamy Cię nazywać?"></div>
    <div class="field"><label for="bio">Kilka słów o Tobie</label><textarea id="bio" style="min-height:90px" maxlength="240" placeholder="Lubię pisać o..."></textarea></div>
    <button class="primary" onclick="saveProfile()">Zapisz profil</button>
-   <div class="profile-stat"><div class="stat"><strong id="myCount">0</strong><span class="hint">Moje wiersze</span></div><div class="stat"><strong id="savedCount">0</strong><span class="hint">Zapisane</span></div><div class="stat"><strong id="bottleCount">0</strong><span class="hint">Wysłane butelki</span></div></div>
+   <div class="profile-stat"><div class="stat"><strong id="myCount">0</strong><span class="hint">Moje wiersze</span></div><div class="stat"><strong id="savedCount">0</strong><span class="hint">Zapisane</span></div><div class="stat"><strong id="bottleCount">0</strong><span class="hint">Butelki</span></div></div>
    <div class="card" style="margin:24px 0;background:#0b1529;border:1px solid #35415d">
     <h3>Moje opublikowane wiersze ✍️</h3>
     <p class="hint">Tutaj zmienisz podpis „Anonim” na swój pseudonim. Tylko Ty możesz zmieniać podpisy swoich wierszy.</p>
     <div id="myPublishedPoems" aria-live="polite">Wczytywanie wierszy…</div>
    </div>
-   <div class="notice">Pseudonim i opis pozostają w tej przeglądarce. Biblioteczka zalogowanych osób jest zapisywana na koncie. Starsze lokalne zapisy nie są automatycznie przenoszone.</div>
+   <div class="notice" id="accountSyncNotice">Sprawdzam konto…</div>
+    <button class="soft" id="importLocalAccountBtn" hidden onclick="importLocalAccount()">Przenieś dane z tego urządzenia na konto</button>
+    <style>#importLocalAccountBtn[hidden]{display:none!important}</style>
    <button class="ghost danger" onclick="clearData()">Usuń lokalne dane SZEPT</button>
   </div>
  </section>
@@ -586,6 +588,11 @@ a.blog-hero-link:hover{background:#e5c98a16}
 const KEY='szept-demo-v1';
 const demo=[];
 let state=load();
+let accountSessionKnown=false,accountId=null,accountReady=false,accountSaved=[],accountPoems=[],accountProfile={},accountBottleCount=null;
+const isSharedId=id=>typeof id==='string'&&/^s[0-9]+$/.test(id);
+function savedIds(){return accountId?[...accountSaved,...state.saved.filter(id=>!isSharedId(id))]:state.saved;}
+function renderAccountCounts(){document.getElementById('savedCount').textContent=accountId?(accountReady?String(accountSaved.length):'…'):String(state.saved.length);document.getElementById('bottleCount').textContent=accountId?(accountBottleCount===null?'—':String(accountBottleCount)):'—';}
+function renderProfileFields(){const p=accountId?accountProfile:state.profile;document.getElementById('nickname').value=p.nickname||'';document.getElementById('bio').value=p.bio||'';}
 let activeFilter='Wszystkie';
 let sharedPoems=[];
 let sharedLoadError=false;
@@ -595,7 +602,7 @@ function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function allPoems(){return [...sharedPoems,...state.poems.filter(p=>!['Kiedy miasto zasypia','Małe światło','Mapa twoich dłoni'].includes((p.title||'').trim())).map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='muzyczny-pokoj' && window.odswiezMuzycznyPokoj)window.odswiezMuzycznyPokoj();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved'){renderSaved();syncSaved();}if(id==='profile'){renderProfile();loadMyPublishedPoems();syncSaved();updateBottleCount();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='muzyczny-pokoj' && window.odswiezMuzycznyPokoj)window.odswiezMuzycznyPokoj();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved'){renderSaved();refreshAccount();}if(id==='profile'){renderProfile();loadMyPublishedPoems();refreshAccount();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function poemCard(p){
  const own=!!p.local, saved=savedIds().includes(p.id);
@@ -607,25 +614,8 @@ function renderHome(){document.getElementById('homePoems').innerHTML=allPoems().
 const emotions=['Wszystkie','Miłość','Tęsknota','Samotność','Nadzieja','Smutek','Szczęście','Rozstanie','Nowy początek'];
 function renderLibrary(){document.getElementById('filters').innerHTML=emotions.map(e=>`<button class="${activeFilter===e?'active':''}" onclick="setFilter('${e}')">${e}</button>`).join('');let list=allPoems().filter(p=>activeFilter==='Wszystkie'||p.emotion===activeFilter);document.getElementById('poemList').innerHTML=(sharedLoadError?'<div class="notice" style="grid-column:1/-1">Nie udało się pobrać wspólnych wierszy. Sprawdź połączenie i odśwież stronę.</div>':'')+(list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Nie ma jeszcze wierszy w tej kategorii. Może napiszesz pierwszy?</div>')}
 function setFilter(e){activeFilter=e;renderLibrary()}
-let accountSaved=[], savedOwner=null, savedBusy=false, savedExtra=[];
-function savedIds(){return savedOwner?accountSaved:state.saved;}
-function paintSaved(){renderHome();renderLibrary();renderSaved();document.getElementById('savedCount').textContent=String(savedIds().length);}
-async function syncSaved(){
- try{const {data:{user},error}=await db.auth.getUser();if(error)throw error;
- if(!user||user.is_anonymous){savedOwner=null;accountSaved=[];savedExtra=[];paintSaved();return;}
- const r=await db.from('szept_saved_poems').select('poem_id').eq('user_id',user.id);if(r.error)throw r.error;
- savedOwner=user.id;accountSaved=r.data.map(x=>'s'+x.poem_id);savedExtra=[];
- const missing=accountSaved.filter(id=>!allPoems().some(p=>p.id===id));
- for(let i=0;i<missing.length;i+=100){const q=await db.from('Poems').select('id,title,content,emotion,author_signature').in('id',missing.slice(i,i+100).map(x=>x.slice(1))).eq('status','published');if(q.error)throw q.error;savedExtra.push(...q.data.map(p=>({id:'s'+p.id,title:p.title,body:p.content,emotion:p.emotion,author:p.author_signature||'Anonim'})));}paintSaved();
- }catch(e){console.error(e);document.getElementById('savedCount').textContent='—';}
-}
-async function toggleSave(id){if(savedBusy)return;savedBusy=true;try{
- const {data:{user},error}=await db.auth.getUser();if(error)throw error;
- if(user&&!user.is_anonymous){if(!/^s[0-9]+$/.test(id)){toast('Tylko opublikowane wiersze można zapisać na koncie.');return;}const r=await db.from('szept_saved_poems').select('poem_id').eq('user_id',user.id).eq('poem_id',id.slice(1)).maybeSingle();if(r.error)throw r.error;const q=r.data?await db.from('szept_saved_poems').delete().eq('user_id',user.id).eq('poem_id',id.slice(1)):await db.from('szept_saved_poems').insert({user_id:user.id,poem_id:id.slice(1)});if(q.error)throw q.error;await syncSaved();toast(r.data?'Usunięto z biblioteczki':'Dodano do biblioteczki');}
- else{state.saved=state.saved.includes(id)?state.saved.filter(x=>x!==id):[...state.saved,id];persist();paintSaved();toast('Zmieniono biblioteczkę lokalną');}
- }catch(e){toast('Nie udało się zmienić biblioteczki');console.error(e);}finally{savedBusy=false;}}
-async function updateBottleCount(){const el=document.getElementById('bottleCount');el.textContent='…';try{const {data:{user},error}=await db.auth.getUser();if(error)throw error;if(!user||user.is_anonymous){el.textContent='—';return;}const r=await db.rpc('szept_my_sent_bottles');if(r.error)throw r.error;el.textContent=String(r.data?.length||0);}catch(e){el.textContent='—';console.error(e);}}
-function renderSaved(){let list=[...allPoems(),...savedExtra.filter(p=>!allPoems().some(x=>x.id===p.id))].filter(p=>savedIds().includes(p.id));document.getElementById('savedList').innerHTML=list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Twoja biblioteczka jest jeszcze pusta. Zapisz wiersz, który chcesz zachować.</div>'}
+function toggleSave(id){if(!accountSessionKnown){toast('Sprawdzam konto…');return;}if(accountId&&isSharedId(id)){toggleAccountSave(id);return;}state.saved=state.saved.includes(id)?state.saved.filter(x=>x!==id):[...state.saved,id];persist();renderHome();renderLibrary();renderSaved();renderAccountCounts();toast(state.saved.includes(id)?'Dodano do biblioteczki':'Usunięto z biblioteczki')}
+function renderSaved(){let list=[...new Map([...accountPoems,...allPoems()].map(p=>[p.id,p])).values()].filter(p=>savedIds().includes(p.id));document.getElementById('savedList').innerHTML=list.length?list.map(poemCard).join(''):'<div class="empty" style="grid-column:1/-1">Twoja biblioteczka jest jeszcze pusta. Zapisz wiersz, który chcesz zachować.</div>'}
 document.getElementById('poemForm').addEventListener('submit',async e=>{
  e.preventDefault();
  const form=e.currentTarget, button=form.querySelector('button[type="submit"]');
@@ -672,7 +662,7 @@ async function sendBottle(){
   if(error)throw error;
   const result=document.getElementById('bottleResult');result.style.display='block';
   result.textContent=data==='sent'?'💌 Butelka wypłynęła! Twój wiersz trafił do innego użytkownika.':'Na razie nie ma innego zarejestrowanego odbiorcy. Spróbuj później.';
-  if(data==='sent'){toast('Butelka wysłana!');loadSentBottles();updateBottleCount();}
+  if(data==='sent'){toast('Butelka wysłana!');loadSentBottles();loadAccountBottleCount();}
  }catch(error){console.error('Butelka: wysyłanie',error);alert('Nie udało się wysłać butelki: '+error.message);}
  finally{button.disabled=false;button.textContent='Wyślij w świat';}
 }
@@ -761,9 +751,9 @@ async function loadSentBottles(){
   });
  }catch(error){console.error('Butelka: statusy',error);root.textContent='Nie udało się odczytać statusów: '+error.message;}
 }
-function saveProfile(){state.profile.nickname=document.getElementById('nickname').value.trim();state.profile.bio=document.getElementById('bio').value.trim();persist();toast('Profil zapisany')}
-function renderProfile(){document.getElementById('nickname').value=state.profile.nickname||'';document.getElementById('bio').value=state.profile.bio||'';document.getElementById('myCount').textContent='…';document.getElementById('savedCount').textContent=savedIds().length;document.getElementById('bottleCount').textContent='…'}
-function clearData(){if(!confirm('Czy na pewno usunąć wszystkie Twoje lokalne wiersze, szkice, zapisane teksty i profil?'))return;state={poems:[],saved:[],bottles:[],profile:{}};persist();localStorage.removeItem(KEY+'-draft');renderHome();renderLibrary();renderSaved();renderProfile();toast('Lokalne dane zostały usunięte')}
+function saveProfile(){if(!accountSessionKnown){toast('Sprawdzam konto…');return;}if(accountId){saveAccountProfile();return;}state.profile.nickname=document.getElementById('nickname').value.trim();state.profile.bio=document.getElementById('bio').value.trim();persist();toast('Profil zapisany')}
+function renderProfile(){renderProfileFields();document.getElementById('myCount').textContent='…';renderAccountCounts();}
+function clearData(){if(!confirm('Czy na pewno usunąć wszystkie Twoje lokalne wiersze, szkice, zapisane teksty i profil?'))return;state={poems:[],saved:[],bottles:[],profile:{}};persist();localStorage.removeItem(KEY+'-draft');renderHome();renderLibrary();renderSaved();renderProfileFields();renderAccountCounts();showSyncNotice();toast('Lokalne dane zostały usunięte')}
 renderHome();renderLibrary();renderSaved();renderProfile();
 try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getElementById('title').value=d.title||'';document.getElementById('body').value=d.body||''}}catch(e){}
  </script>
@@ -774,6 +764,107 @@ try{let d=JSON.parse(localStorage.getItem(KEY+'-draft'));if(d){document.getEleme
 
 const SUPABASE_KEY = "sb_publishable_sn7U5LUjn-5jnARxWVWsVA_rn9PNAUi";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Synchronizacja konta: dane lokalne pozostają osobno i nie są przypisywane automatycznie.
+let accountGeneration=0, accountBusy=false, accountRefreshQueued=false;
+const syncNotice=document.getElementById('accountSyncNotice');
+function redrawAccount(){renderHome();renderLibrary();renderSaved();renderAccountCounts();}
+function showSyncNotice(){
+ const importBtn=document.getElementById('importLocalAccountBtn');
+ const localCount=state.saved.filter(isSharedId).length;
+ const hasProfile=!!(state.profile.nickname||state.profile.bio);
+ importBtn.hidden=!(accountId&&accountReady&&(localCount||hasProfile));
+ syncNotice.textContent=accountId?(accountReady?'Profil i Biblioteczka są powiązane z Twoim kontem. Dane lokalne można przenieść osobno.':'Nie udało się jeszcze pobrać danych konta. Spróbuj odświeżyć.'):'Zaloguj się, aby synchronizować profil i Biblioteczkę. Bez logowania dane są lokalne.';
+}
+async function fetchAccountSaved(uid){
+ let ids=[];
+ for(let offset=0;;offset+=500){
+  const {data,error}=await db.from('szept_account_saved').select('poem_id').eq('user_id',uid).order('poem_id').range(offset,offset+499);
+  if(error)throw error;
+  ids.push(...(data||[]).map(r=>'s'+r.poem_id));
+  if((data||[]).length<500)break;
+ }
+ return ids;
+}
+async function fetchSavedPoems(ids){
+ const poems=[];
+ for(let i=0;i<ids.length;i+=100){
+  const {data,error}=await db.from('Poems').select('id,title,content,emotion,created_at,author_signature').eq('status','published').in('id',ids.slice(i,i+100).map(id=>id.slice(1)));
+  if(error)throw error;
+  poems.push(...(data||[]).map(p=>({id:'s'+p.id,title:p.title||'',body:p.content||'',emotion:p.emotion||'',author:p.author_signature||'Anonim',created:p.created_at})));
+ }
+ return poems;
+}
+async function syncAccount(user,force=false){
+ accountSessionKnown=true;
+ const uid=user&&!user.is_anonymous?user.id:null;
+ if(uid===accountId&&accountReady&&!force)return;
+ if(uid===accountId&&accountBusy){accountRefreshQueued=true;return;}
+ const changed=uid!==accountId;
+ const gen=++accountGeneration;
+ accountId=uid;accountBusy=!!uid;accountReady=false;
+ if(changed){accountRefreshQueued=false;accountSaved=[];accountPoems=[];accountProfile={};accountBottleCount=null;renderProfileFields();redrawAccount();}
+ if(!uid){accountBusy=false;renderProfileFields();redrawAccount();showSyncNotice();return;}
+ try{
+  const [profile,ids]=await Promise.all([db.from('szept_account_profiles').select('nickname,bio').eq('user_id',uid).maybeSingle(),fetchAccountSaved(uid)]);
+  if(profile.error)throw profile.error;
+  const poems=await fetchSavedPoems(ids);
+  if(gen!==accountGeneration)return;
+  accountProfile=profile.data||{};accountSaved=ids;accountPoems=poems;accountReady=true;
+  renderProfileFields();redrawAccount();
+ }catch(e){if(gen===accountGeneration){console.error('Synchronizacja konta',e);toast('Nie udało się pobrać danych konta.');}}
+ finally{if(gen===accountGeneration){accountBusy=false;showSyncNotice();renderAccountCounts();loadAccountBottleCount();if(accountRefreshQueued){accountRefreshQueued=false;syncAccount(user,true);}}}
+}
+async function refreshAccount(){
+ const {data,error}=await db.auth.getSession();
+ if(error){toast('Nie udało się sprawdzić sesji.');return;}
+ await syncAccount(data.session?.user,true);
+}
+async function loadAccountBottleCount(){
+ const uid=accountId,gen=accountGeneration;
+ if(!uid)return;
+ try{const {data,error}=await db.rpc('szept_my_sent_bottles');if(error)throw error;if(gen===accountGeneration){accountBottleCount=(data||[]).length;renderAccountCounts();}}
+ catch(e){if(gen===accountGeneration){accountBottleCount=null;renderAccountCounts();console.error('Licznik butelek',e);}}
+}
+async function toggleAccountSave(id){
+ if(!accountReady||accountBusy){toast('Poczekaj na dane konta lub odśwież stronę.');return;}
+ const uid=accountId,gen=accountGeneration, removing=accountSaved.includes(id);
+ accountBusy=true;
+ try{
+  const result=removing?await db.from('szept_account_saved').delete().eq('user_id',uid).eq('poem_id',id.slice(1)):await db.from('szept_account_saved').upsert({user_id:uid,poem_id:id.slice(1)},{onConflict:'user_id,poem_id',ignoreDuplicates:true});
+  if(result.error)throw result.error;
+  if(gen!==accountGeneration)return;
+  accountSaved=removing?accountSaved.filter(x=>x!==id):[...new Set([...accountSaved,id])];
+  if(!removing){const p=allPoems().find(p=>p.id===id);if(p)accountPoems=[...accountPoems.filter(x=>x.id!==id),p];}
+  redrawAccount();toast(removing?'Usunięto z Biblioteczki':'Dodano do Biblioteczki');
+ }catch(e){console.error(e);toast('Nie udało się zapisać zmiany.');}
+ finally{if(gen===accountGeneration){accountBusy=false;if(accountRefreshQueued){accountRefreshQueued=false;refreshAccount();}}}
+}
+async function saveAccountProfile(){
+ if(!accountReady||accountBusy){toast('Poczekaj na dane konta lub odśwież stronę.');return;}
+ const uid=accountId,gen=accountGeneration;
+ const profile={nickname:document.getElementById('nickname').value.trim(),bio:document.getElementById('bio').value.trim()};
+ accountBusy=true;
+ try{const {error}=await db.from('szept_account_profiles').upsert({user_id:uid,...profile});if(error)throw error;if(gen===accountGeneration){accountProfile=profile;toast('Profil zapisany na koncie');}}
+ catch(e){console.error(e);toast('Nie udało się zapisać profilu.');}
+ finally{if(gen===accountGeneration){accountBusy=false;if(accountRefreshQueued){accountRefreshQueued=false;refreshAccount();}}}
+}
+async function importLocalAccount(){
+ if(!accountId||!accountReady||accountBusy)return;
+ if(!confirm('Przenieść zapisane na tym urządzeniu opublikowane wiersze oraz uzupełnić puste pola profilu na aktualnym koncie? Zrób to tylko dla własnych danych.'))return;
+ const uid=accountId,gen=accountGeneration;accountBusy=true;
+ try{
+  const ids=[...new Set(state.saved.filter(isSharedId))];
+  const poems=await fetchSavedPoems(ids);
+  if(gen!==accountGeneration)return;
+  for(let i=0;i<poems.length;i+=100){const {error}=await db.from('szept_account_saved').upsert(poems.slice(i,i+100).map(p=>({user_id:uid,poem_id:p.id.slice(1)})),{onConflict:'user_id,poem_id',ignoreDuplicates:true});if(error)throw error;if(gen!==accountGeneration)return;}
+  const profile={nickname:accountProfile.nickname||String(state.profile.nickname||'').slice(0,32),bio:accountProfile.bio||String(state.profile.bio||'').slice(0,240)};
+  if(profile.nickname||profile.bio){const {error}=await db.from('szept_account_profiles').upsert({user_id:uid,...profile});if(error)throw error;}
+  if(gen===accountGeneration)toast('Przeniesiono dostępne dane na konto.');
+ }catch(e){console.error(e);toast('Przenoszenie nie zostało zakończone. Dane lokalne zachowano.');}
+ finally{if(gen===accountGeneration){accountBusy=false;accountRefreshQueued=false;refreshAccount();}}
+}
+db.auth.onAuthStateChange((event,session)=>{if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(event))setTimeout(()=>syncAccount(session?.user),0);});
+
 // Uruchom dopiero po utworzeniu klienta Supabase.
 renderBottleSelect();
 
@@ -892,7 +983,7 @@ async function refreshSharedPoems(){
  }catch(error){console.error('Nie udało się pobrać wierszy:',error);sharedLoadError=true;}
  renderHome();renderLibrary();renderSaved();
 }
-refreshSharedPoems();syncSaved();updateBottleCount();
+refreshSharedPoems();
 </script>
  
 <section id="dodaj-publikacje">
@@ -1131,7 +1222,7 @@ async function loadMyPublishedPoems(){
 
 db.auth.onAuthStateChange(() => {
   // Odczekaj do zakończenia aktualizacji sesji, zanim pobierzesz użytkownika.
-  setTimeout(() => { sprawdzModeratora(); savedOwner=null;accountSaved=[];savedExtra=[];syncSaved();updateBottleCount();if(document.getElementById('profile').classList.contains('active'))loadMyPublishedPoems(); if(document.getElementById('bottle').classList.contains('active')){renderBottleSelect();loadReceivedBottles();loadSentBottles();} }, 0);
+  setTimeout(() => { sprawdzModeratora(); if(document.getElementById('profile').classList.contains('active'))loadMyPublishedPoems(); if(document.getElementById('bottle').classList.contains('active')){renderBottleSelect();loadReceivedBottles();loadSentBottles();} }, 0);
 });
  sprawdzModeratora();
  document.getElementById('anonymous').addEventListener('change',e=>{document.getElementById('author').disabled=e.target.checked;});
