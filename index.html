@@ -154,6 +154,7 @@ textarea{min-height:230px;resize:vertical;line-height:1.7}
 .profile-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
 .stat{text-align:center;padding:18px 8px;background:#ffffff08;border:1px solid #ffffff12;border-radius:14px}
 .stat strong{display:block;font:28px Georgia;color:var(--gold)}
+.profile-stat button.stat{width:100%;min-width:0;font:inherit;color:inherit;cursor:pointer}.profile-stat button.stat:hover,.profile-stat button.stat:focus-visible{border-color:var(--gold)}
 footer{border-top:1px solid #ffffff12;padding:27px 0;color:var(--muted);font-size:12px}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(100px);background:#e8d39f;color:#17182a;padding:12px 18px;border-radius:999px;font-weight:700;z-index:30;transition:.25s;box-shadow:var(--shadow)}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -433,7 +434,6 @@ a.blog-hero-link:hover{background:#e5c98a16}
    <button class="navbtn" data-page="library">Czytelnia</button>
    <button class="navbtn" data-page="write">Napisz</button>
    <button class="navbtn" data-page="bottle">Butelka</button>
-   <button class="navbtn" data-page="saved">Biblioteczka</button>
    <button class="navbtn" data-page="profile">Mój profil</button>
    <a class="navbtn" href="./szept-na-dzis.html">Szept na dziś</a>
    <a class="navbtn blog-link" href="./miedzy-slowami.html">Między słowami</a>
@@ -542,16 +542,11 @@ a.blog-hero-link:hover{background:#e5c98a16}
    <div id="receivedBottles" style="margin-top:20px;text-align:left"></div>
   </div>
   <div class="bottle-panel">
-   <h2>Moje wysłane butelki</h2>
+   <h2 id="sentBottlesSection" tabindex="-1">Moje wysłane butelki</h2>
    <p class="sub">Sprawdź, czy Twoje słowa zostały otwarte. Nie pokazujemy danych odbiorców.</p>
    <button class="soft" onclick="loadSentBottles()">Odśwież statusy</button>
    <div id="sentBottles" style="margin-top:20px;text-align:left" aria-live="polite"></div>
   </div>
- </section>
-
- <section id="saved" class="page">
-  <div class="eyebrow">Zachowaj na później</div><h2>Twoja biblioteczka</h2><p class="sub">Wiersze, do których chcesz wrócić.</p>
-  <div id="savedList" class="grid" style="margin-top:20px"></div>
  </section>
 
  <section id="profile" class="page">
@@ -560,9 +555,9 @@ a.blog-hero-link:hover{background:#e5c98a16}
    <div class="field"><label for="nickname">Pseudonim autora</label><input id="nickname" maxlength="32" placeholder="Jak mamy Cię nazywać?"></div>
    <div class="field"><label for="bio">Kilka słów o Tobie</label><textarea id="bio" style="min-height:90px" maxlength="240" placeholder="Lubię pisać o..."></textarea></div>
    <button class="primary" onclick="saveProfile()">Zapisz profil</button>
-   <div class="profile-stat"><div class="stat"><strong id="myCount">0</strong><span class="hint">Moje wiersze</span></div><div class="stat"><strong id="savedCount">0</strong><span class="hint">Zapisane</span></div><div class="stat"><strong id="bottleCount">0</strong><span class="hint">Butelki</span></div></div>
+   <div class="profile-stat"><button type="button" class="stat" onclick="jumpToSzeptSection('myPublishedSection')"><strong id="myCount">0</strong><span class="hint">Moje wiersze</span></button><button type="button" class="stat" onclick="jumpToSzeptSection('savedSection')"><strong id="savedCount">0</strong><span class="hint">Zapisane</span></button><button type="button" class="stat" onclick="showPage('bottle','sentBottlesSection')"><strong id="bottleCount">0</strong><span class="hint">Butelki</span></button></div>
    <div class="card" style="margin:24px 0;background:#0b1529;border:1px solid #35415d">
-    <h3>Moje opublikowane wiersze ✍️</h3>
+    <h3 id="myPublishedSection" tabindex="-1">Moje opublikowane wiersze ✍️</h3>
     <p class="hint">Tutaj zmienisz podpis „Anonim” na swój pseudonim. Tylko Ty możesz zmieniać podpisy swoich wierszy.</p>
     <div id="myPublishedPoems" aria-live="polite">Wczytywanie wierszy…</div>
    </div>
@@ -570,7 +565,11 @@ a.blog-hero-link:hover{background:#e5c98a16}
     <button class="soft" id="importLocalAccountBtn" hidden onclick="importLocalAccount()">Przenieś dane z tego urządzenia na konto</button>
     <style>#importLocalAccountBtn[hidden]{display:none!important}</style>
    <button class="ghost danger" onclick="clearData()">Usuń lokalne dane SZEPT</button>
-  </div>
+   </div>
+   <section id="savedSection" aria-labelledby="savedHeading" tabindex="-1" style="margin:32px auto 0">
+    <div class="section-head"><div><div class="eyebrow">Zachowaj na później</div><h2 id="savedHeading">Moje zapisane wiersze</h2><p class="sub">Twoja biblioteczka — słowa, do których chcesz wrócić.</p></div><button type="button" class="soft" onclick="showPage('library')">Przejdź do Czytelni →</button></div>
+    <div id="savedList" class="grid" style="margin-top:20px"></div>
+   </section>
  </section>
  
 <section id="moderation" class="page">
@@ -602,7 +601,8 @@ function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function allPoems(){return [...sharedPoems,...state.poems.filter(p=>!['Kiedy miasto zasypia','Małe światło','Mapa twoich dłoni'].includes((p.title||'').trim())).map(p=>({...p,local:true})),...demo]}
 function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function showPage(id){if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='muzyczny-pokoj' && window.odswiezMuzycznyPokoj)window.odswiezMuzycznyPokoj();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='saved'){renderSaved();refreshAccount();}if(id==='profile'){renderProfile();loadMyPublishedPoems();refreshAccount();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}window.scrollTo({top:0,behavior:'smooth'})}
+function jumpToSzeptSection(id){const target=document.getElementById(id);if(!target)return;target.focus({preventScroll:true});const header=document.querySelector('header');const offset=header?header.getBoundingClientRect().bottom:0;window.scrollTo({top:Math.max(0,window.scrollY+target.getBoundingClientRect().top-offset-16),behavior:'smooth'});}
+function showPage(id,target){if(id==='saved'){id='profile';target='savedSection';}if(id==='moderation'&&!szeptCzyAdmin){toast('Panel dostępny tylko dla administratora.');return;}if(id==='moderation')pokazOczekujaceWiersze();document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='pokoj-szeptow')odswiezPokojSzeptow();if(id==='muzyczny-pokoj' && window.odswiezMuzycznyPokoj)window.odswiezMuzycznyPokoj();if(id==='library'){renderLibrary();refreshSharedPoems();}if(id==='profile'){renderProfile();renderSaved();loadMyPublishedPoems();refreshAccount();}if(id==='bottle'){renderBottleSelect();loadReceivedBottles();loadSentBottles();}if(target){jumpToSzeptSection(target);}else{window.scrollTo({top:0,behavior:'smooth'});}}
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function poemCard(p){
  const own=!!p.local, saved=savedIds().includes(p.id);
